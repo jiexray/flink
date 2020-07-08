@@ -36,6 +36,7 @@ import org.apache.flink.runtime.io.network.partition.consumer.InputChannel;
 import org.apache.flink.runtime.plugable.DeserializationDelegate;
 import org.apache.flink.runtime.plugable.NonReusingDeserializationDelegate;
 import org.apache.flink.streaming.api.watermark.Watermark;
+import org.apache.flink.streaming.hack.serializehack.HackDeserializationWatcher;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElementSerializer;
 import org.apache.flink.streaming.runtime.streamstatus.StatusWatermarkValve;
@@ -77,6 +78,10 @@ public final class StreamTaskNetworkInput<T> implements StreamTaskInput<T> {
 	private int lastChannel = UNSPECIFIED;
 
 	private RecordDeserializer<DeserializationDelegate<StreamElement>> currentRecordDeserializer = null;
+
+	public int getLastChannel() {
+		return lastChannel;
+	}
 
 	@SuppressWarnings("unchecked")
 	public StreamTaskNetworkInput(
@@ -154,6 +159,8 @@ public final class StreamTaskNetworkInput<T> implements StreamTaskInput<T> {
 
 	private void processElement(StreamElement recordOrMark, DataOutput<T> output) throws Exception {
 		if (recordOrMark.isRecord()){
+			HackDeserializationWatcher.printDeserializedRecord(this, recordOrMark.asRecord());
+
 			output.emitRecord(recordOrMark.asRecord());
 		} else if (recordOrMark.isWatermark()) {
 			statusWatermarkValve.inputWatermark(recordOrMark.asWatermark(), lastChannel);
