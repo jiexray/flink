@@ -111,6 +111,10 @@ public abstract class RecordWriter<T extends IOReadableWritable> implements Avai
 		}
 	}
 
+	public ResultPartitionWriter getTargetPartition() {
+		return targetPartition;
+	}
+
 	protected void emit(T record, int targetChannel) throws IOException, InterruptedException {
 		checkErroneous();
 

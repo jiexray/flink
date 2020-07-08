@@ -20,7 +20,6 @@ package org.apache.flink.runtime.io.network.api.serialization;
 
 import org.apache.flink.core.io.IOReadableWritable;
 import org.apache.flink.core.memory.DataOutputSerializer;
-import org.apache.flink.runtime.hack.HackTest;
 import org.apache.flink.runtime.io.network.buffer.BufferBuilder;
 
 import java.io.IOException;
@@ -63,8 +62,6 @@ public class SpanningRecordSerializer<T extends IOReadableWritable> implements R
 				throw new IllegalStateException("Pending serialization of previous record.");
 			}
 		}
-
-		HackTest.hackTest();
 
 		serializationBuffer.clear();
 		// the initial capacity of the serialization buffer should be no less than 4

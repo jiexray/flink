@@ -25,6 +25,7 @@ import org.apache.flink.runtime.io.network.api.writer.RecordWriter;
 import org.apache.flink.runtime.plugable.SerializationDelegate;
 import org.apache.flink.streaming.api.operators.Output;
 import org.apache.flink.streaming.api.watermark.Watermark;
+import org.apache.flink.streaming.hack.serializehack.HackSerializationWatcher;
 import org.apache.flink.streaming.runtime.metrics.WatermarkGauge;
 import org.apache.flink.streaming.runtime.streamrecord.LatencyMarker;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
@@ -54,6 +55,14 @@ public class RecordWriterOutput<OUT> implements OperatorChain.WatermarkGaugeExpo
 	private final OutputTag outputTag;
 
 	private final WatermarkGauge watermarkGauge = new WatermarkGauge();
+
+	public OutputTag getOutputTag() {
+		return outputTag;
+	}
+
+	public RecordWriter<SerializationDelegate<StreamElement>> getRecordWriter() {
+		return recordWriter;
+	}
 
 	@SuppressWarnings("unchecked")
 	public RecordWriterOutput(
@@ -102,6 +111,8 @@ public class RecordWriterOutput<OUT> implements OperatorChain.WatermarkGaugeExpo
 
 	private <X> void pushToRecordWriter(StreamRecord<X> record) {
 		serializationDelegate.setInstance(record);
+
+		HackSerializationWatcher.printSerializedRecord(this, record);
 
 		try {
 			recordWriter.emit(serializationDelegate);
