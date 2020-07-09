@@ -28,6 +28,7 @@ import org.apache.flink.runtime.metrics.MetricNames;
 import org.apache.flink.streaming.api.graph.StreamConfig;
 import org.apache.flink.streaming.api.operators.OneInputStreamOperator;
 import org.apache.flink.streaming.api.watermark.Watermark;
+import org.apache.flink.streaming.hack.serializehack.HackDeserializationWatcher;
 import org.apache.flink.streaming.runtime.io.AbstractDataOutput;
 import org.apache.flink.streaming.runtime.io.CheckpointedInputGate;
 import org.apache.flink.streaming.runtime.io.InputProcessorUtil;
@@ -156,6 +157,8 @@ public class OneInputStreamTask<IN, OUT> extends StreamTask<OUT, OneInputStreamO
 
 		@Override
 		public void emitRecord(StreamRecord<IN> record) throws Exception {
+			HackDeserializationWatcher.printDataOutputBackOneInputOperator(operator);
+
 			numRecordsIn.inc();
 			operator.setKeyContextElement1(record);
 			operator.processElement(record);
