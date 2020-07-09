@@ -20,6 +20,7 @@ package org.apache.flink.runtime.io.network.api.serialization;
 
 import org.apache.flink.core.io.IOReadableWritable;
 import org.apache.flink.core.memory.DataOutputSerializer;
+import org.apache.flink.runtime.hack.partition.HackRecordSerializerWatcher;
 import org.apache.flink.runtime.io.network.buffer.BufferBuilder;
 
 import java.io.IOException;
@@ -87,6 +88,8 @@ public class SpanningRecordSerializer<T extends IOReadableWritable> implements R
 	 */
 	@Override
 	public SerializationResult copyToBufferBuilder(BufferBuilder targetBuffer) {
+		HackRecordSerializerWatcher.printCopyToBufferBuilder(dataBuffer);
+
 		targetBuffer.append(dataBuffer);
 		targetBuffer.commit();
 
