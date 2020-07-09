@@ -21,18 +21,17 @@ package org.apache.flink.runtime.io.network.partition;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.runtime.checkpoint.channel.ChannelStateReader;
 import org.apache.flink.runtime.checkpoint.channel.ChannelStateReader.ReadResult;
+import org.apache.flink.runtime.hack.partition.HackSubpartitionWatcher;
 import org.apache.flink.runtime.io.network.api.EndOfPartitionEvent;
 import org.apache.flink.runtime.io.network.api.serialization.EventSerializer;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.buffer.BufferBuilder;
 import org.apache.flink.runtime.io.network.buffer.BufferConsumer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
-
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -465,6 +464,8 @@ public class PipelinedSubpartition extends ResultSubpartition {
 	}
 
 	private void notifyDataAvailable() {
+		HackSubpartitionWatcher.printPipelinedSubpartitionFlush(this, readView);
+
 		if (readView != null) {
 			readView.notifyDataAvailable();
 		}
