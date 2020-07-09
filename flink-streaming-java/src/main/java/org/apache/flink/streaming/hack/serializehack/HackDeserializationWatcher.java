@@ -19,7 +19,7 @@ public class HackDeserializationWatcher {
 		"], deserialize record [" + record + "]");
 	}
 
-	public static void printDataOutputBackOneInputOperator(OneInputStreamOperator operator) {
+	public static void printDataOutputBackOneInputOperator(OneInputStreamOperator operator, StreamRecord record) {
 		AbstractStreamOperator abstractStreamOperator;
 		if (operator instanceof AbstractStreamOperator) {
 			abstractStreamOperator = (AbstractStreamOperator) operator;
@@ -29,6 +29,7 @@ public class HackDeserializationWatcher {
 		}
 		StreamTask task = abstractStreamOperator.getContainingTask();
 
-		System.out.println("InputGate output record to task [" + task + "]");
+		System.out.println("InputGate output record [" + record +
+			"] to task [" + task + "]");
 	}
 }

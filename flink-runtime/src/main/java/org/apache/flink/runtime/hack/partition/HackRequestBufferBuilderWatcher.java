@@ -19,6 +19,9 @@ public class HackRequestBufferBuilderWatcher {
 	}
 
 	private static String convertBufferOwnerToString(BufferPoolOwner owner) {
+		if (owner == null) {
+			return "BufferPoolOwner is NULL";
+		}
 		ResultPartition resultPartition;
 
 		if (owner instanceof ResultPartition) {

@@ -157,7 +157,7 @@ public class OneInputStreamTask<IN, OUT> extends StreamTask<OUT, OneInputStreamO
 
 		@Override
 		public void emitRecord(StreamRecord<IN> record) throws Exception {
-			HackDeserializationWatcher.printDataOutputBackOneInputOperator(operator);
+			HackDeserializationWatcher.printDataOutputBackOneInputOperator(operator, record);
 
 			numRecordsIn.inc();
 			operator.setKeyContextElement1(record);
