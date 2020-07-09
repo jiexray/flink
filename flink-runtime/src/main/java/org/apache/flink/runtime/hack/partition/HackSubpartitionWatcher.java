@@ -21,10 +21,10 @@ public class HackSubpartitionWatcher {
 	}
 
 	public static String convertBufferAvailabilityListenerToString(BufferAvailabilityListener availabilityListener) {
-		if(availabilityListener == null) {
+		if (availabilityListener == null) {
 			return "BufferAvailabilityListener is NULL";
 		} else if (availabilityListener instanceof LocalInputChannel) {
-			LocalInputChannel localInputChannel = (LocalInputChannel)availabilityListener;
+			LocalInputChannel localInputChannel = (LocalInputChannel) availabilityListener;
 			return localInputChannel.toString();
 		} else {
 			return "Other type BufferAvailabilityListener";
