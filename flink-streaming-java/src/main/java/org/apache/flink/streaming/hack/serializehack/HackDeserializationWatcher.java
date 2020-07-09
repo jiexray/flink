@@ -1,7 +1,10 @@
 package org.apache.flink.streaming.hack.serializehack;
 
+import org.apache.flink.streaming.api.operators.AbstractStreamOperator;
+import org.apache.flink.streaming.api.operators.OneInputStreamOperator;
 import org.apache.flink.streaming.runtime.io.StreamTaskNetworkInput;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
+import org.apache.flink.streaming.runtime.tasks.StreamTask;
 
 /**
  * A watcher class for deserializer in {@link StreamTaskNetworkInput}.
@@ -11,8 +14,21 @@ public class HackDeserializationWatcher {
 		int inputIndex = networkInput.getInputIndex();
 		int lastChannel = networkInput.getLastChannel();
 
-		System.out.println("StreamTaskNetworkInput index " + inputIndex +
-		", lastChannel " + lastChannel +
-		", deserialize record " + record);
+		System.out.println("StreamTaskNetworkInput index [" + inputIndex +
+		"], lastChannel [" + lastChannel +
+		"], deserialize record [" + record + "]");
+	}
+
+	public static void printDataOutputBackOneInputOperator(OneInputStreamOperator operator) {
+		AbstractStreamOperator abstractStreamOperator;
+		if (operator instanceof AbstractStreamOperator) {
+			abstractStreamOperator = (AbstractStreamOperator) operator;
+		} else {
+			System.out.println("[ERROR] cannot cast operator to AbstractUdfStreamOperator");
+			return;
+		}
+		StreamTask task = abstractStreamOperator.getContainingTask();
+
+		System.out.println("InputGate output record to task [" + task + "]");
 	}
 }

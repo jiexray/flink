@@ -20,6 +20,7 @@ package org.apache.flink.runtime.io.network.buffer;
 
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.core.memory.MemorySegment;
+import org.apache.flink.runtime.hack.partition.HackRequestBufferBuilderWatcher;
 import org.apache.flink.runtime.io.network.buffer.BufferListener.NotificationResult;
 import org.apache.flink.util.ExceptionUtils;
 
@@ -301,11 +302,14 @@ class LocalBufferPool implements BufferPool {
 
 	@Nullable
 	private MemorySegment requestMemorySegment(int targetChannel) throws IOException {
+		HackRequestBufferBuilderWatcher.printRequestBufferBuilder(targetChannel, bufferPoolOwner);
+
 		MemorySegment segment = null;
 		synchronized (availableMemorySegments) {
 			returnExcessMemorySegments();
 
 			if (availableMemorySegments.isEmpty()) {
+				HackRequestBufferBuilderWatcher.printRequestFromGlobal(bufferPoolOwner);
 				segment = requestMemorySegmentFromGlobal();
 			}
 			// segment may have been released by buffer pool owner

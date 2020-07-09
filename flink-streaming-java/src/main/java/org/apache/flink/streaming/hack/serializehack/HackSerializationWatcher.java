@@ -27,9 +27,9 @@ public class HackSerializationWatcher {
 
 		String owningTask = resultPartition.getOwningTaskName();
 
-		System.out.println("ResultWriterOutput with OutputTag " + (outputTag == null ? "NULL" : outputTag) +
-		", send to ResultParition " + resultPartition +
-		", task " + owningTask +
-		", record " + record);
+		System.out.println("ResultWriterOutput with OutputTag [" + (outputTag == null ? "NULL" : outputTag) +
+		"], send to ResultParition [" + resultPartition +
+		"], task [" + owningTask +
+		"], record [" + record + "]");
 	}
 }
