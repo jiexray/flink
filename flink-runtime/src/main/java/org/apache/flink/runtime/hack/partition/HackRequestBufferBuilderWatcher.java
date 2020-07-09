@@ -1,11 +1,12 @@
 package org.apache.flink.runtime.hack.partition;
 
-import org.apache.flink.runtime.io.network.api.writer.RecordWriter;
+import org.apache.flink.runtime.io.network.buffer.BufferPool;
 import org.apache.flink.runtime.io.network.buffer.BufferPoolOwner;
+import org.apache.flink.runtime.io.network.buffer.NetworkBufferPool;
 import org.apache.flink.runtime.io.network.partition.ResultPartition;
 
 /**
- * A watcher class for {@link RecordWriter}.
+ * A watcher class for {@link BufferPool}, typically, {@link NetworkBufferPool}.
  */
 public class HackRequestBufferBuilderWatcher {
 	public static void printRequestBufferBuilder(int targetChannel, BufferPoolOwner owner) {
