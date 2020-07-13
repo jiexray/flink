@@ -23,9 +23,6 @@ public class HackSubpartitionWatcher {
 			System.out.println("Subpartition info [" + resultSubpartitionInfo +
 				"], " + "flush and notify data available to data viewer [PipelinedSubpartitionView is NULL]");
 		}
-
-
-
 	}
 
 	public static String convertBufferAvailabilityListenerToString(BufferAvailabilityListener availabilityListener) {
