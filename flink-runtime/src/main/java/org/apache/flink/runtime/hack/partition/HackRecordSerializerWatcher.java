@@ -11,7 +11,8 @@ import java.nio.ByteBuffer;
  */
 public class HackRecordSerializerWatcher {
 	public static void printCopyToBufferBuilder(ByteBuffer dataBuffer) {
-		System.out.println("Copy buffer len [" + dataBuffer.remaining() +
-		"] to BufferBuilder");
+//		System.out.println("Copy buffer len [" + dataBuffer.remaining() +
+//		"] to BufferBuilder");
+		return;
 	}
 }

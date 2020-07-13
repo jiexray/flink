@@ -192,4 +192,7 @@ public abstract class ResultSubpartition {
 		}
 	}
 
+	public ResultPartition getParent() {
+		return parent;
+	}
 }

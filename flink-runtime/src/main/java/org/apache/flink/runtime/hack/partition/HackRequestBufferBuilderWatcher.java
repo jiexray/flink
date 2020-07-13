@@ -10,13 +10,15 @@ import org.apache.flink.runtime.io.network.partition.ResultPartition;
  */
 public class HackRequestBufferBuilderWatcher {
 	public static void printRequestBufferBuilder(int targetChannel, BufferPoolOwner owner) {
-		System.out.println("BufferOwner (ResultPartition) [" + convertBufferOwnerToString(owner) +
-		"] request buffer on channel [" + targetChannel + "]");
+		return;
+//		System.out.println("BufferOwner (ResultPartition) [" + convertBufferOwnerToString(owner) +
+//		"] request buffer on channel [" + targetChannel + "]");
 	}
 
 	public static void printRequestFromGlobal(BufferPoolOwner owner) {
-		System.out.println("BufferOwner (ResultPartition) [" + convertBufferOwnerToString(owner) +
-		"] request buffer from global (NetworkBufferPool)");
+		return;
+//		System.out.println("BufferOwner (ResultPartition) [" + convertBufferOwnerToString(owner) +
+//		"] request buffer from global (NetworkBufferPool)");
 	}
 
 	private static String convertBufferOwnerToString(BufferPoolOwner owner) {
