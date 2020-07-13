@@ -14,7 +14,7 @@ public class HackSubpartitionWatcher {
 	public static void printPipelinedSubpartitionFlush(PipelinedSubpartition subpartition, PipelinedSubpartitionView dataView) {
 		ResultSubpartitionInfo resultSubpartitionInfo = subpartition.getSubpartitionInfo();
 		BufferAvailabilityListener availabilityListener;
-		if (dataView == null) {
+		if (dataView != null) {
 			availabilityListener = dataView.getAvailabilityListener();
 			System.out.println("Subpartition info [" + resultSubpartitionInfo +
 				"], " + "flush and notify data available to data viewer [" + dataView +
