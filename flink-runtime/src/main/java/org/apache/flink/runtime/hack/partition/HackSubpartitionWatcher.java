@@ -13,11 +13,19 @@ import org.apache.flink.runtime.io.network.partition.consumer.LocalInputChannel;
 public class HackSubpartitionWatcher {
 	public static void printPipelinedSubpartitionFlush(PipelinedSubpartition subpartition, PipelinedSubpartitionView dataView) {
 		ResultSubpartitionInfo resultSubpartitionInfo = subpartition.getSubpartitionInfo();
-		BufferAvailabilityListener availabilityListener = dataView.getAvailabilityListener();
+		BufferAvailabilityListener availabilityListener;
+		if (dataView == null) {
+			availabilityListener = dataView.getAvailabilityListener();
+			System.out.println("Subpartition info [" + resultSubpartitionInfo +
+				"], " + "flush and notify data available to data viewer [" + dataView +
+				"], and trigger BufferAvailableListener [" + convertBufferAvailabilityListenerToString(availabilityListener) + "]");
+		} else {
+			System.out.println("Subpartition info [" + resultSubpartitionInfo +
+				"], " + "flush and notify data available to data viewer [PipelinedSubpartitionView is NULL]");
+		}
 
-		System.out.println("Subpartition info [" + resultSubpartitionInfo +
-		"], " + "flush and notify data available to data viewer [" + dataView +
-		"], and trigger BufferAvailableListener " + convertBufferAvailabilityListenerToString(availabilityListener) + "]");
+
+
 	}
 
 	public static String convertBufferAvailabilityListenerToString(BufferAvailabilityListener availabilityListener) {
