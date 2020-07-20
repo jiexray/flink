@@ -241,7 +241,7 @@ class PartitionRequestQueue extends ChannelInboundHandlerAdapter {
 						reader.getReceiverId(),
 						next.buffersInBacklog());
 
-					HackRemotePartitionTimeRecorder.tickOnBufferSend(channel, msg.sequenceNumber, msg.bufferSize);
+					HackRemotePartitionTimeRecorder.tickOnBufferSend(channel, msg.sequenceNumber, msg.bufferSize, reader.getReceiverId().toString());
 
 					// Write and flush and wait until this is done before
 					// trying to continue with the next buffer.

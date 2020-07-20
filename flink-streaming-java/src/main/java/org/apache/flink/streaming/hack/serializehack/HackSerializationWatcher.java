@@ -4,6 +4,7 @@ import org.apache.flink.runtime.io.network.api.serialization.SpanningRecordSeria
 import org.apache.flink.runtime.io.network.api.writer.RecordWriter;
 import org.apache.flink.runtime.io.network.api.writer.ResultPartitionWriter;
 import org.apache.flink.runtime.io.network.partition.ResultPartition;
+import org.apache.flink.streaming.hack.StreamingHackStringUtils;
 import org.apache.flink.streaming.runtime.io.RecordWriterOutput;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
 import org.apache.flink.util.OutputTag;
@@ -12,6 +13,8 @@ import org.apache.flink.util.OutputTag;
  * A watcher class for {@link SpanningRecordSerializer}.
  */
 public class HackSerializationWatcher {
+	private static boolean containValue = false;
+
 	public static void printSerializedRecord(RecordWriterOutput recordWriterOutput, StreamRecord record) {
 		OutputTag outputTag = recordWriterOutput.getOutputTag();
 		RecordWriter recordWriter = recordWriterOutput.getRecordWriter();
@@ -30,6 +33,6 @@ public class HackSerializationWatcher {
 		System.out.println("ResultWriterOutput with OutputTag [" + (outputTag == null ? "NULL" : outputTag) +
 		"], send to ResultParition [" + resultPartition +
 		"], task [" + owningTask +
-		"], record [" + record + "]");
+		"], record [" + StreamingHackStringUtils.convertStreamRecordToString(record, containValue) + "]");
 	}
 }

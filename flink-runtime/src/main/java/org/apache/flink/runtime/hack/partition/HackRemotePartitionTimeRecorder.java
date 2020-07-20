@@ -57,16 +57,22 @@ public class HackRemotePartitionTimeRecorder {
 
 	public static void tickOnBufferReceived(RemoteInputChannel inputChannel, int sequenceNumber) {
 		long currentTs = System.currentTimeMillis();
-		System.out.println("RemoteInputChannel [" + HackStringUtil.convertRemoteInputChannelToString(inputChannel) +
-			"] receive buffer sequenceNumber [" + sequenceNumber +
+		String inputChannelId = inputChannel.getInputChannelId().toString();
+
+//		System.out.println("RemoteInputChannel [" + HackStringUtil.convertRemoteInputChannelToString(inputChannel) +
+//			"] receive buffer sequenceNumber [" + sequenceNumber +
+//			"], timestamp [" + currentTs + "]");
+		System.out.println("[RemoteInputChannelId, sequenceNumber]: [" + inputChannelId + ", " + sequenceNumber +
 			"], timestamp [" + currentTs + "]");
 	}
 
-	public static void tickOnBufferSend(Channel channel, int sequenceNumber, int bufferSize) {
+	public static void tickOnBufferSend(Channel channel, int sequenceNumber, int bufferSize, String inputChannelId) {
 		long currentTs = System.currentTimeMillis();
-		System.out.println("Channel [" + channel +
-			"], send buffer with sequenceNumber [" + sequenceNumber +
-			"], bufferSize [" + bufferSize +
-			"], timestamp [" + currentTs + "]");
+//		System.out.println("Channel [" + channel +
+//			"], send buffer with sequenceNumber [" + sequenceNumber +
+//			"], bufferSize [" + bufferSize +
+//			"], timestamp [" + currentTs + "]");
+		System.out.println("[RemoteInputChannelId, sequenceNumber]: [" + inputChannelId + ", " + sequenceNumber +
+			"], bufferSize [" + bufferSize + "], timestamp [" + currentTs + "]");
 	}
 }
