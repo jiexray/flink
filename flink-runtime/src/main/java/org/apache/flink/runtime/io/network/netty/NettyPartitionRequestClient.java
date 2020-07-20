@@ -120,7 +120,7 @@ public class NettyPartitionRequestClient implements PartitionRequestClient {
 			int localRequestId = requestId;
 			@Override
 			public void operationComplete(ChannelFuture future) throws Exception {
-				HackRemotePartitionTimeRecorder.tickBufferReceived(requestId);
+				HackRemotePartitionTimeRecorder.tickRequestResponseReceived(requestId);
 				if (!future.isSuccess()) {
 					clientHandler.removeInputChannel(inputChannel);
 					SocketAddress remoteAddr = future.channel().remoteAddress();

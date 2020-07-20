@@ -19,6 +19,7 @@
 package org.apache.flink.runtime.io.network.netty;
 
 import org.apache.flink.annotation.VisibleForTesting;
+import org.apache.flink.runtime.hack.partition.HackRemotePartitionTimeRecorder;
 import org.apache.flink.runtime.io.network.NetworkSequenceViewReader;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.netty.NettyMessage.ErrorResponse;
@@ -239,6 +240,8 @@ class PartitionRequestQueue extends ChannelInboundHandlerAdapter {
 						reader.getSequenceNumber(),
 						reader.getReceiverId(),
 						next.buffersInBacklog());
+
+					HackRemotePartitionTimeRecorder.tickOnBufferSend(channel, msg.sequenceNumber, msg.bufferSize);
 
 					// Write and flush and wait until this is done before
 					// trying to continue with the next buffer.

@@ -18,6 +18,7 @@
 
 package org.apache.flink.runtime.io.network.netty;
 
+import org.apache.flink.runtime.hack.partition.HackRemotePartitionTimeRecorder;
 import org.apache.flink.runtime.io.network.NetworkClientHandler;
 import org.apache.flink.runtime.io.network.netty.exception.LocalTransportException;
 import org.apache.flink.runtime.io.network.netty.exception.RemoteTransportException;
@@ -300,6 +301,7 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 		if (bufferOrEvent.isBuffer() && bufferOrEvent.bufferSize == 0) {
 			inputChannel.onEmptyBuffer(bufferOrEvent.sequenceNumber, bufferOrEvent.backlog);
 		} else if (bufferOrEvent.getBuffer() != null) {
+			HackRemotePartitionTimeRecorder.tickOnBufferReceived(inputChannel, bufferOrEvent.sequenceNumber);
 			inputChannel.onBuffer(bufferOrEvent.getBuffer(), bufferOrEvent.sequenceNumber, bufferOrEvent.backlog);
 		} else {
 			throw new IllegalStateException("The read buffer is null in credit-based input channel.");
