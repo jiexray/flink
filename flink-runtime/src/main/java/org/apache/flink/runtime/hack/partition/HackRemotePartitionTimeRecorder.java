@@ -2,6 +2,7 @@ package org.apache.flink.runtime.hack.partition;
 
 import org.apache.flink.runtime.hack.HackStringUtil;
 import org.apache.flink.runtime.io.network.partition.consumer.RemoteInputChannel;
+
 import org.apache.flink.shaded.netty4.io.netty.channel.Channel;
 
 import java.util.HashMap;
