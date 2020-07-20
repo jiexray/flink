@@ -19,6 +19,7 @@
 package org.apache.flink.runtime.io.network.netty;
 
 import org.apache.flink.runtime.event.TaskEvent;
+import org.apache.flink.runtime.hack.partition.HackRemotePartitionTimeRecorder;
 import org.apache.flink.runtime.io.network.ConnectionID;
 import org.apache.flink.runtime.io.network.NetworkClientHandler;
 import org.apache.flink.runtime.io.network.PartitionRequestClient;
@@ -112,9 +113,14 @@ public class NettyPartitionRequestClient implements PartitionRequestClient {
 		final PartitionRequest request = new PartitionRequest(
 				partitionId, subpartitionIndex, inputChannel.getInputChannelId(), inputChannel.getInitialCredit());
 
+		int requestId = HackRemotePartitionTimeRecorder.getNextRequestId();
+		HackRemotePartitionTimeRecorder.registerInputChannelInfo(requestId, inputChannel);
+
 		final ChannelFutureListener listener = new ChannelFutureListener() {
+			int localRequestId = requestId;
 			@Override
 			public void operationComplete(ChannelFuture future) throws Exception {
+				HackRemotePartitionTimeRecorder.tickBufferReceived(requestId);
 				if (!future.isSuccess()) {
 					clientHandler.removeInputChannel(inputChannel);
 					SocketAddress remoteAddr = future.channel().remoteAddress();
@@ -128,6 +134,7 @@ public class NettyPartitionRequestClient implements PartitionRequestClient {
 		};
 
 		if (delayMs == 0) {
+			HackRemotePartitionTimeRecorder.tickRemotePartitionRequest(requestId);
 			ChannelFuture f = tcpChannel.writeAndFlush(request);
 			f.addListener(listener);
 		} else {

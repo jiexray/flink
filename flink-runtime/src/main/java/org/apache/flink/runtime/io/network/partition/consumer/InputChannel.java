@@ -109,6 +109,9 @@ public abstract class InputChannel {
 	// ------------------------------------------------------------------------
 	// Properties
 	// ------------------------------------------------------------------------
+	public SingleInputGate getInputGate() {
+		return inputGate;
+	}
 
 	/**
 	 * Returns the index of this channel within its {@link SingleInputGate}.
