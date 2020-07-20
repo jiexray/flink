@@ -8,7 +8,7 @@ import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
  */
 public class StreamingHackStringUtils {
 	public static String convertStreamRecordToString(StreamRecord record, boolean containValue) {
-		if(containValue) {
+		if (containValue) {
 			return record.toString();
 		} else {
 			return "Record @ " + (record.hasTimestamp() ? record.getTimestamp() : "(undef)");
