@@ -12,14 +12,17 @@ import org.apache.flink.streaming.runtime.tasks.StreamTask;
  */
 public class HackDeserializationWatcher {
 	public static boolean containValue = false;
+	public static boolean debugDeserializer = false;
 
 	public static void printDeserializedRecord(StreamTaskNetworkInput networkInput, StreamRecord record) {
 		int inputIndex = networkInput.getInputIndex();
 		int lastChannel = networkInput.getLastChannel();
 
-		System.out.println("StreamTaskNetworkInput index [" + inputIndex +
-		"], lastChannel [" + lastChannel +
-		"], deserialize record [" + StreamingHackStringUtils.convertStreamRecordToString(record, containValue) + "]");
+		if (debugDeserializer) {
+			System.out.println("StreamTaskNetworkInput index [" + inputIndex +
+			"], lastChannel [" + lastChannel +
+			"], deserialize record [" + StreamingHackStringUtils.convertStreamRecordToString(record, containValue) + "]");
+		}
 	}
 
 	public static void printDataOutputBackOneInputOperator(OneInputStreamOperator operator, StreamRecord record) {
@@ -32,7 +35,9 @@ public class HackDeserializationWatcher {
 		}
 		StreamTask task = abstractStreamOperator.getContainingTask();
 
-		System.out.println("InputGate output record [" + StreamingHackStringUtils.convertStreamRecordToString(record, containValue) +
-			"] to task [" + task + "]");
+		if (debugDeserializer) {
+			System.out.println("InputGate output record [" + StreamingHackStringUtils.convertStreamRecordToString(record, containValue) +
+				"] to task [" + task + "]");
+		}
 	}
 }

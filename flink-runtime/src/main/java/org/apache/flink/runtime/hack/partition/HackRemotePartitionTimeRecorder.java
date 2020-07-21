@@ -11,7 +11,8 @@ import java.util.Map;
 /**
  * This is a time recorder for:
  * 1. requesting remote partition;
- * 2. remote partition onBuffer;
+ * 2. remote partition onBuffer (receive);
+ * 3. remote partition send;
  */
 public class HackRemotePartitionTimeRecorder {
 	private static Map<Integer, Long> remotePartitionRequestTimestamps = new HashMap<>();

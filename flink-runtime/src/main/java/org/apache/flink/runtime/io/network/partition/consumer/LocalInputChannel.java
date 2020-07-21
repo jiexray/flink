@@ -23,6 +23,7 @@ import org.apache.flink.metrics.Counter;
 import org.apache.flink.runtime.checkpoint.channel.ChannelStateWriter;
 import org.apache.flink.runtime.event.TaskEvent;
 import org.apache.flink.runtime.execution.CancelTaskException;
+import org.apache.flink.runtime.hack.partition.HackLocalPartitionTimeRecorder;
 import org.apache.flink.runtime.io.network.TaskEventPublisher;
 import org.apache.flink.runtime.io.network.api.CheckpointBarrier;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
@@ -201,6 +202,7 @@ public class LocalInputChannel extends InputChannel implements BufferAvailabilit
 		}
 
 		BufferAndBacklog next = subpartitionView.getNextBuffer();
+		HackLocalPartitionTimeRecorder.tickDataPolledByLocalInputChannel(this, next.buffer().getSize());
 
 		if (next == null) {
 			if (subpartitionView.isReleased()) {
@@ -225,6 +227,7 @@ public class LocalInputChannel extends InputChannel implements BufferAvailabilit
 
 	@Override
 	public void notifyDataAvailable() {
+		HackLocalPartitionTimeRecorder.tickNotifyDataAvailable(this);
 		notifyChannelNonEmpty();
 	}
 

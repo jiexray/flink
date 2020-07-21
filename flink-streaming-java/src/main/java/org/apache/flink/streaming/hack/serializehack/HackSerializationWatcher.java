@@ -14,6 +14,7 @@ import org.apache.flink.util.OutputTag;
  */
 public class HackSerializationWatcher {
 	private static boolean containValue = false;
+	private static boolean debugSerializer = false;
 
 	public static void printSerializedRecord(RecordWriterOutput recordWriterOutput, StreamRecord record) {
 		OutputTag outputTag = recordWriterOutput.getOutputTag();
@@ -30,9 +31,11 @@ public class HackSerializationWatcher {
 
 		String owningTask = resultPartition.getOwningTaskName();
 
-		System.out.println("ResultWriterOutput with OutputTag [" + (outputTag == null ? "NULL" : outputTag) +
-		"], send to ResultParition [" + resultPartition +
-		"], task [" + owningTask +
-		"], record [" + StreamingHackStringUtils.convertStreamRecordToString(record, containValue) + "]");
+		if (debugSerializer) {
+			System.out.println("ResultWriterOutput with OutputTag [" + (outputTag == null ? "NULL" : outputTag) +
+			"], send to ResultParition [" + resultPartition +
+			"], task [" + owningTask +
+			"], record [" + StreamingHackStringUtils.convertStreamRecordToString(record, containValue) + "]");
+		}
 	}
 }
