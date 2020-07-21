@@ -8,7 +8,6 @@ import org.apache.flink.runtime.io.network.partition.ResultPartition;
 import org.apache.flink.runtime.io.network.partition.consumer.LocalInputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.RemoteInputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
-import org.apache.flink.runtime.jobgraph.IntermediateDataSetID;
 
 /**
  * Convert Class to info strings.
@@ -23,7 +22,6 @@ public class HackStringUtil {
 		return "From SingleInputGate [" + gateIndex +
 			"], with channel info [" + channelInfo + "]";
 	}
-
 
 	public static String convertRemoteInputChannelToString(RemoteInputChannel inputChannel) {
 		SingleInputGate inputGate = inputChannel.getInputGate();
