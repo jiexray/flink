@@ -750,7 +750,7 @@ public class Execution implements AccessExecution, Archiveable<ArchivedExecution
 			// We run the submission in the future executor so that the serialization of large TDDs does not block
 			// the main thread and sync back to the main thread once submission is completed.
 			CompletableFuture.supplyAsync(() -> taskManagerGateway.submitTask(deployment, rpcTimeout), executor)
-				.thenCompose(Function.identity())
+				.thenCompose(Function.identity()) // ?
 				.whenCompleteAsync(
 					(ack, failure) -> {
 						// only respond to the failure case
