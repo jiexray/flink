@@ -33,7 +33,7 @@ public class HackLocalPartitionTimeRecorder {
 
 		long notifyTs = notifyTimestamps.poll();
 		System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(inputChannel) +
-			"] has polled data [" + bufferSize + "] Bytes from subpartition view at (notify, pool) timestamp: (" +
-			notifyTs + "," + currentTs + ")");
+			"] has polled data [" + bufferSize + "] Bytes from subpartition view at (notify, pool, bufferSize) timestamp: (" +
+			notifyTs + "," + currentTs + "," + bufferSize + ")");
 	}
 }
