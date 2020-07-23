@@ -1,6 +1,5 @@
 package org.apache.flink.runtime.hack.partition;
 
-import org.apache.flink.runtime.hack.HackStringUtil;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.partition.ResultSubpartition;
 import org.apache.flink.runtime.io.network.partition.consumer.LocalInputChannel;
