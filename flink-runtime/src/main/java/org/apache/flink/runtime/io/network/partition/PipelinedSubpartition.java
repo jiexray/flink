@@ -21,6 +21,7 @@ package org.apache.flink.runtime.io.network.partition;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.runtime.checkpoint.channel.ChannelStateReader;
 import org.apache.flink.runtime.checkpoint.channel.ChannelStateReader.ReadResult;
+import org.apache.flink.runtime.hack.partition.HackLocalPartitionTimeRecorder;
 import org.apache.flink.runtime.hack.partition.HackSubpartitionWatcher;
 import org.apache.flink.runtime.io.network.api.EndOfPartitionEvent;
 import org.apache.flink.runtime.io.network.api.serialization.EventSerializer;
@@ -240,6 +241,7 @@ public class PipelinedSubpartition extends ResultSubpartition {
 			while (!buffers.isEmpty()) {
 				BufferConsumer bufferConsumer = buffers.peek();
 
+				HackLocalPartitionTimeRecorder.tickBufferConsumerBuildStart();
 				buffer = bufferConsumer.build();
 
 				checkState(bufferConsumer.isFinished() || buffers.size() == 1,
@@ -256,6 +258,7 @@ public class PipelinedSubpartition extends ResultSubpartition {
 				}
 
 				if (buffer.readableBytes() > 0) {
+					HackLocalPartitionTimeRecorder.tickBufferConsumerBuildEnd(buffer);
 					break;
 				}
 				buffer.recycleBuffer();
