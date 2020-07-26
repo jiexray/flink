@@ -4,6 +4,7 @@ import org.apache.flink.runtime.checkpoint.channel.InputChannelInfo;
 import org.apache.flink.runtime.io.network.buffer.BufferPoolOwner;
 import org.apache.flink.runtime.io.network.netty.HackCreditBasedBufferAvailabilityListenerWatcher;
 import org.apache.flink.runtime.io.network.partition.BufferAvailabilityListener;
+import org.apache.flink.runtime.io.network.partition.PipelinedSubpartitionView;
 import org.apache.flink.runtime.io.network.partition.ResultPartition;
 import org.apache.flink.runtime.io.network.partition.consumer.LocalInputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.RemoteInputChannel;
@@ -13,6 +14,10 @@ import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
  * Convert Class to info strings.
  */
 public class HackStringUtil {
+	public static String convertPipelinedSubpartitionViewToString(PipelinedSubpartitionView subpartitionView) {
+		return subpartitionView.toString();
+	}
+
 	public static String convertLocalInputChannelToString(LocalInputChannel inputChannel) {
 		SingleInputGate inputGate = inputChannel.getInputGate();
 		int gateIndex = inputGate.getGateIndex();

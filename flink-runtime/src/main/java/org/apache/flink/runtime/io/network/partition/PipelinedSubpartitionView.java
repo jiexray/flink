@@ -18,6 +18,7 @@
 
 package org.apache.flink.runtime.io.network.partition;
 
+import org.apache.flink.runtime.hack.partition.HackSubpartitionViewNotifyAndPollTimeRecorder;
 import org.apache.flink.runtime.io.network.buffer.BufferConsumer;
 import org.apache.flink.runtime.io.network.partition.ResultSubpartition.BufferAndBacklog;
 
@@ -54,11 +55,13 @@ public class PipelinedSubpartitionView implements ResultSubpartitionView {
 	@Nullable
 	@Override
 	public BufferAndBacklog getNextBuffer() {
+		HackSubpartitionViewNotifyAndPollTimeRecorder.tickSubpartitionDataPoll(this);
 		return parent.pollBuffer();
 	}
 
 	@Override
 	public void notifyDataAvailable() {
+		HackSubpartitionViewNotifyAndPollTimeRecorder.tickSubpartitionDataAvailable(this);
 		availabilityListener.notifyDataAvailable();
 	}
 
