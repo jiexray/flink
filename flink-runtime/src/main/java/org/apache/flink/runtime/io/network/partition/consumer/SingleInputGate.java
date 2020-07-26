@@ -643,6 +643,8 @@ public class SingleInputGate extends IndexedInputGate {
 			// notifications.
 			Optional<BufferAndAvailability> result = inputChannel.get().getNextBuffer();
 
+			HackInputGateChannelQueueWatcher.tickInputChannelGetTimestamp(inputChannel.get(), result);
+
 			synchronized (inputChannelsWithData) {
 				if (result.isPresent() && result.get().moreAvailable()) {
 					// enqueue the inputChannel at the end to avoid starvation
@@ -824,9 +826,6 @@ public class SingleInputGate extends IndexedInputGate {
 
 			InputChannel inputChannel = inputChannelsWithData.remove();
 			enqueuedInputChannelsWithData.clear(inputChannel.getChannelIndex());
-
-			HackInputGateChannelQueueWatcher.tickInputChannelGetTimestamp(inputChannel);
-
 			return Optional.of(inputChannel);
 		}
 	}

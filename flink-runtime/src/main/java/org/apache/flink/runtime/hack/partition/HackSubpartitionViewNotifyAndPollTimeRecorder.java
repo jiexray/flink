@@ -1,6 +1,5 @@
 package org.apache.flink.runtime.hack.partition;
 
-import org.apache.flink.runtime.hack.HackStringUtil;
 import org.apache.flink.runtime.io.network.partition.PipelinedSubpartitionView;
 
 /**
@@ -20,7 +19,8 @@ public class HackSubpartitionViewNotifyAndPollTimeRecorder {
 		}
 
 		long pollTimestamp = System.currentTimeMillis();
-		System.out.println("PipelineSubpartitionView [" + HackStringUtil.convertPipelinedSubpartitionViewToString(subpartitionView) +
-			"] notify and poll delay is [" + (pollTimestamp - notifyTimestamp) + "] ms");
+		// TODO: have bugs, need to trace the (notify, poll) timestamp for each subpartitionView
+//		System.out.println("PipelineSubpartitionView [" + HackStringUtil.convertPipelinedSubpartitionViewToString(subpartitionView) +
+//			"] notify and poll delay is [" + (pollTimestamp - notifyTimestamp) + "] ms");
 	}
 }

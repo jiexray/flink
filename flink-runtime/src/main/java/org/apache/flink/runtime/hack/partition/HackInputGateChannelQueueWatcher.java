@@ -9,6 +9,7 @@ import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * This is class is for monitoring the inputChannelWithData queue in
@@ -34,19 +35,25 @@ public class HackInputGateChannelQueueWatcher {
 		}
 	}
 
-	public static void tickInputChannelGetTimestamp(InputChannel inputChannel) {
+	public static void tickInputChannelGetTimestamp(InputChannel inputChannel, Optional<InputChannel.BufferAndAvailability> result) {
 		long queueTimestamp = inputChannelToQueueTimeStamp.get(inputChannel.getChannelInfo());
+		int bufferSize = 0;
+
+		if (result.isPresent()) {
+			bufferSize = result.get().buffer().getSize();
+		}
+
 		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
 			if (inputChannel instanceof LocalInputChannel) {
 				LocalInputChannel localInputChannel = (LocalInputChannel) inputChannel;
 				System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(localInputChannel) +
 					"] has wait from queueChannel() to getChannel for [" + (System.currentTimeMillis() - queueTimestamp) +
-					"] ms");
+					"] ms, and transfer buffer [" + bufferSize + "] Bytes");
 			} else if (inputChannel instanceof RemoteInputChannel) {
 				RemoteInputChannel remoteInputChannel = (RemoteInputChannel) inputChannel;
 				System.out.println("RemoteInputChannel [" + HackStringUtil.convertRemoteInputChannelToString(remoteInputChannel) +
-					"] has wait from queueChannel() to getChannel for [" + (System.currentTimeMillis() - queueTimestamp) +
-					"] ms");
+					"] has wait from queueChannel() to getChannel() for [" + (System.currentTimeMillis() - queueTimestamp) +
+					"] ms, and transfer buffer [" + bufferSize + "] Bytes");
 			} else {
 				System.out.println("[ERROR!!!] cannot extract the InputChannel [" + inputChannel.getChannelInfo() + "]");
 			}
