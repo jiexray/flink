@@ -13,7 +13,6 @@ import java.util.Map;
 /**
  * This is class is for monitoring the inputChannelWithData queue in
  * {@link org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate}.
- *
  * Further, we tick the timestamps of queueChannel() and getChannel() in
  * {@link org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate}
  * to compute the queue delay of an inputChannel.
