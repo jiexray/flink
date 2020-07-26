@@ -791,7 +791,8 @@ public class SingleInputGate extends IndexedInputGate {
 			inputChannelsWithData.add(channel);
 			enqueuedInputChannelsWithData.set(channel.getChannelIndex());
 
-			HackInputGateChannelQueueWatcher.dumpLengthOfInputChannelWithData(this);
+			HackInputGateChannelQueueWatcher.dumpLengthOfInputChannelWithData(this, true);
+			HackInputGateChannelQueueWatcher.tickInputChannelQueueTimestamp(channel);
 
 			if (availableChannels == 0) {
 				inputChannelsWithData.notifyAll();
@@ -805,6 +806,7 @@ public class SingleInputGate extends IndexedInputGate {
 	}
 
 	private Optional<InputChannel> getChannel(boolean blocking) throws InterruptedException {
+		HackInputGateChannelQueueWatcher.dumpLengthOfInputChannelWithData(this, false);
 		synchronized (inputChannelsWithData) {
 			while (inputChannelsWithData.size() == 0) {
 				if (closeFuture.isDone()) {
@@ -822,6 +824,9 @@ public class SingleInputGate extends IndexedInputGate {
 
 			InputChannel inputChannel = inputChannelsWithData.remove();
 			enqueuedInputChannelsWithData.clear(inputChannel.getChannelIndex());
+
+			HackInputGateChannelQueueWatcher.tickInputChannelGetTimestamp(inputChannel);
+
 			return Optional.of(inputChannel);
 		}
 	}
