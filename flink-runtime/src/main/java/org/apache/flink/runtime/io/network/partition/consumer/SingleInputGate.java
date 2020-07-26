@@ -25,6 +25,7 @@ import org.apache.flink.runtime.clusterframework.types.ResourceID;
 import org.apache.flink.runtime.event.AbstractEvent;
 import org.apache.flink.runtime.event.TaskEvent;
 import org.apache.flink.runtime.execution.CancelTaskException;
+import org.apache.flink.runtime.hack.partition.HackInputGateChannelQueueWatcher;
 import org.apache.flink.runtime.io.network.api.EndOfPartitionEvent;
 import org.apache.flink.runtime.io.network.api.serialization.EventSerializer;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
@@ -411,6 +412,12 @@ public class SingleInputGate extends IndexedInputGate {
 		return channels[channelIndex];
 	}
 
+	public int getNumberOfInputChannelWithData() {
+		synchronized (inputChannelsWithData) {
+			return inputChannelsWithData.size();
+		}
+	}
+
 	// ------------------------------------------------------------------------
 	// Setup/Life-cycle
 	// ------------------------------------------------------------------------
@@ -783,6 +790,8 @@ public class SingleInputGate extends IndexedInputGate {
 
 			inputChannelsWithData.add(channel);
 			enqueuedInputChannelsWithData.set(channel.getChannelIndex());
+
+			HackInputGateChannelQueueWatcher.dumpLengthOfInputChannelWithData(this);
 
 			if (availableChannels == 0) {
 				inputChannelsWithData.notifyAll();
