@@ -1,6 +1,5 @@
 package org.apache.flink.runtime.hack.partition;
 
-import org.apache.flink.runtime.hack.HackStringUtil;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
 import org.apache.flink.runtime.io.network.partition.ResultSubpartition;
 import org.apache.flink.runtime.io.network.partition.consumer.LocalInputChannel;
@@ -24,8 +23,8 @@ public class HackLocalPartitionTimeRecorder {
 		notifyTimestamps.add(currentTs);
 //		System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(inputChannel) +
 //			"] is notified from subpartition view at timestamp [" + currentTs + "]");
-		System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(inputChannel) +
-			"] is notified in Thread [" + Thread.currentThread() + "]");
+//		System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(inputChannel) +
+//			"] is notified in Thread [" + Thread.currentThread() + "]");
 	}
 
 	public static void tickDataPolledByLocalInputChannel(LocalInputChannel inputChannel, ResultSubpartition.BufferAndBacklog nextBuffer) {
@@ -43,8 +42,8 @@ public class HackLocalPartitionTimeRecorder {
 //		System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(inputChannel) +
 //			"] has polled buffer type [" + nextBuffer.buffer().getDataType() + "] from subpartition view at (notify, pool, bufferSize) timestamp: (" +
 //			notifyTs + "," + currentTs + "," + bufferSize + ")");
-		System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(inputChannel) +
-			"] has polled buffer in Thread [" + Thread.currentThread() + "]");
+//		System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(inputChannel) +
+//			"] has polled buffer in Thread [" + Thread.currentThread() + "]");
 	}
 
 	public static void tickBufferConsumerBuildStart() {

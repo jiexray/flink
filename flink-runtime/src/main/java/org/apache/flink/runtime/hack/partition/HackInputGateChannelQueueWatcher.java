@@ -24,7 +24,7 @@ public class HackInputGateChannelQueueWatcher {
 	public static void dumpLengthOfInputChannelWithData(SingleInputGate inputGate, boolean queueOrGet) {
 		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
 			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
-			"] in length during " + (queueOrGet ? "[queueChannel()]" : "[getChannel()]"));
+			"] in length " + (queueOrGet ? "after [queueChannel()]" : "before [getChannel()]"));
 	}
 
 	public static void tickInputChannelQueueTimestamp(InputChannel inputChannel) {
@@ -47,7 +47,7 @@ public class HackInputGateChannelQueueWatcher {
 			if (inputChannel instanceof LocalInputChannel) {
 				LocalInputChannel localInputChannel = (LocalInputChannel) inputChannel;
 				System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(localInputChannel) +
-					"] has wait from queueChannel() to getChannel for [" + (System.currentTimeMillis() - queueTimestamp) +
+					"] has wait from queueChannel() to getChannel() for [" + (System.currentTimeMillis() - queueTimestamp) +
 					"] ms, and transfer buffer [" + bufferSize + "] Bytes");
 			} else if (inputChannel instanceof RemoteInputChannel) {
 				RemoteInputChannel remoteInputChannel = (RemoteInputChannel) inputChannel;
