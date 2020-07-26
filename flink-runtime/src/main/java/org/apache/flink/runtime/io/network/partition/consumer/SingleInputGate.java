@@ -650,6 +650,8 @@ public class SingleInputGate extends IndexedInputGate {
 					// enqueue the inputChannel at the end to avoid starvation
 					inputChannelsWithData.add(inputChannel.get());
 					enqueuedInputChannelsWithData.set(inputChannel.get().getChannelIndex());
+
+					HackInputGateChannelQueueWatcher.tickInputChannelMoreAvailable(inputChannel.get());
 				}
 
 				if (inputChannelsWithData.isEmpty()) {

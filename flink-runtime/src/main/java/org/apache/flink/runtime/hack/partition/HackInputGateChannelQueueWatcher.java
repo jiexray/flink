@@ -27,6 +27,10 @@ public class HackInputGateChannelQueueWatcher {
 			"] in length " + (queueOrGet ? "after [queueChannel()]" : "before [getChannel()]"));
 	}
 
+	public static void tickInputChannelMoreAvailable(InputChannel inputChannel) {
+		inputChannelToQueueTimeStamp.put(inputChannel.getChannelInfo(), System.currentTimeMillis());
+	}
+
 	public static void tickInputChannelQueueTimestamp(InputChannel inputChannel) {
 		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
 			return;
