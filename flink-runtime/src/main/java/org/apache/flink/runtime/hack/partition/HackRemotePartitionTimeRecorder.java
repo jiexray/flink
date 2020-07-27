@@ -56,7 +56,7 @@ public class HackRemotePartitionTimeRecorder {
 			"], delay [" + interval + "] ms");
 	}
 
-	public static void tickOnBufferReceived(RemoteInputChannel inputChannel, int sequenceNumber) {
+	public static void tickOnBufferReceived(RemoteInputChannel inputChannel, int sequenceNumber, int bufferSize) {
 		long currentTs = System.currentTimeMillis();
 		String inputChannelId = inputChannel.getInputChannelId().toString();
 
@@ -64,7 +64,7 @@ public class HackRemotePartitionTimeRecorder {
 //			"] receive buffer sequenceNumber [" + sequenceNumber +
 //			"], timestamp [" + currentTs + "]");
 		System.out.println("[RemoteInputChannelId,sequenceNumber,receiveOrSend,timestamp,bufferSize]: [" + inputChannelId + "," + sequenceNumber +
-			",1," + currentTs + ",0]");
+			",1," + currentTs + "," + bufferSize + "]");
 	}
 
 	public static void tickOnBufferSend(Channel channel, int sequenceNumber, int bufferSize, String inputChannelId) {
