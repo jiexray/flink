@@ -35,8 +35,7 @@ public class HackStringUtil {
 
 		InputChannelInfo channelInfo = inputChannel.getChannelInfo();
 
-		return "From SingleInputGate [" + gateIndex +
-			"], with channel info [" + channelInfo + "]";
+		return "LocalInputGate with channel info [" + channelInfo + "]";
 	}
 
 	public static String convertRemoteInputChannelToString(RemoteInputChannel inputChannel) {

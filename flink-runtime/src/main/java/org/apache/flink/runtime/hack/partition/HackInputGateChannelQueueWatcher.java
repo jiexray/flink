@@ -49,7 +49,7 @@ public class HackInputGateChannelQueueWatcher {
 	}
 
 	public static void tickInputChannelMoreAvailable(SingleInputGate inputGate, InputChannel inputChannel) {
-		inputChannelToQueueTimeStamp.put(inputChannel.getChannelInfo(), System.currentTimeMillis());
+		tickInputChannelQueueTimestamp(inputChannel);
 		printQueueMoreAvailable(inputGate, inputChannel);
 	}
 
@@ -71,6 +71,7 @@ public class HackInputGateChannelQueueWatcher {
 		}
 
 		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
+			inputChannelToQueueTimeStamp.remove(inputChannel.getChannelInfo());
 			String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
 			System.out.println("InputChannel [" + channelInfo + "] has wait from queueChannel() to getChannel() for [" +
 				(System.currentTimeMillis() - queueTimestamp) +
