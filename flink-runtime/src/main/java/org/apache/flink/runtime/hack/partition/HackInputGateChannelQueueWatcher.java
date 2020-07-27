@@ -63,12 +63,16 @@ public class HackInputGateChannelQueueWatcher {
 	}
 
 	public static void tickInputChannelGetTimestamp(InputChannel inputChannel, Optional<InputChannel.BufferAndAvailability> result) {
-		long queueTimestamp = inputChannelToQueueTimeStamp.get(inputChannel.getChannelInfo());
 		int bufferSize = 0;
-
 		if (result.isPresent()) {
 			bufferSize = result.get().buffer().getSize();
 		}
+
+		if (inputChannel == null) {
+			System.out.println("[BUG???] InputChannel has already been null, and transfer data [" + bufferSize + "] Bytes");
+			return;
+		}
+		long queueTimestamp = inputChannelToQueueTimeStamp.get(inputChannel.getChannelInfo());
 
 		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
 			inputChannelToQueueTimeStamp.remove(inputChannel.getChannelInfo());
