@@ -6,6 +6,7 @@ import org.apache.flink.runtime.io.network.netty.HackCreditBasedBufferAvailabili
 import org.apache.flink.runtime.io.network.partition.BufferAvailabilityListener;
 import org.apache.flink.runtime.io.network.partition.PipelinedSubpartitionView;
 import org.apache.flink.runtime.io.network.partition.ResultPartition;
+import org.apache.flink.runtime.io.network.partition.consumer.InputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.LocalInputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.RemoteInputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
@@ -14,6 +15,16 @@ import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
  * Convert Class to info strings.
  */
 public class HackStringUtil {
+	public static String convertInputChannelToString(InputChannel inputChannel) {
+		if (inputChannel instanceof LocalInputChannel) {
+			return convertLocalInputChannelToString((LocalInputChannel) inputChannel);
+		} else if (inputChannel instanceof RemoteInputChannel) {
+			return convertRemoteInputChannelToString((RemoteInputChannel) inputChannel);
+		} else {
+			return "[ERROR!!!] cannot extract the InputChannel [" + inputChannel.getChannelInfo() + "]";
+		}
+	}
+
 	public static String convertPipelinedSubpartitionViewToString(PipelinedSubpartitionView subpartitionView) {
 		return subpartitionView.toString();
 	}

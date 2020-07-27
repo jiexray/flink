@@ -651,7 +651,7 @@ public class SingleInputGate extends IndexedInputGate {
 					inputChannelsWithData.add(inputChannel.get());
 					enqueuedInputChannelsWithData.set(inputChannel.get().getChannelIndex());
 
-					HackInputGateChannelQueueWatcher.tickInputChannelMoreAvailable(inputChannel.get());
+					HackInputGateChannelQueueWatcher.tickInputChannelMoreAvailable(this, inputChannel.get());
 				}
 
 				if (inputChannelsWithData.isEmpty()) {
@@ -795,7 +795,7 @@ public class SingleInputGate extends IndexedInputGate {
 			inputChannelsWithData.add(channel);
 			enqueuedInputChannelsWithData.set(channel.getChannelIndex());
 
-			HackInputGateChannelQueueWatcher.dumpLengthOfInputChannelWithData(this, true);
+			HackInputGateChannelQueueWatcher.dumpLengthOfInputChannelWithData(this, channel, true);
 			HackInputGateChannelQueueWatcher.tickInputChannelQueueTimestamp(channel);
 
 			if (availableChannels == 0) {
@@ -810,7 +810,6 @@ public class SingleInputGate extends IndexedInputGate {
 	}
 
 	private Optional<InputChannel> getChannel(boolean blocking) throws InterruptedException {
-		HackInputGateChannelQueueWatcher.dumpLengthOfInputChannelWithData(this, false);
 		synchronized (inputChannelsWithData) {
 			while (inputChannelsWithData.size() == 0) {
 				if (closeFuture.isDone()) {
@@ -828,6 +827,9 @@ public class SingleInputGate extends IndexedInputGate {
 
 			InputChannel inputChannel = inputChannelsWithData.remove();
 			enqueuedInputChannelsWithData.clear(inputChannel.getChannelIndex());
+
+			HackInputGateChannelQueueWatcher.dumpLengthOfInputChannelWithData(this, inputChannel, false);
+
 			return Optional.of(inputChannel);
 		}
 	}

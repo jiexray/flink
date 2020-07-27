@@ -3,8 +3,6 @@ package org.apache.flink.runtime.hack.partition;
 import org.apache.flink.runtime.checkpoint.channel.InputChannelInfo;
 import org.apache.flink.runtime.hack.HackStringUtil;
 import org.apache.flink.runtime.io.network.partition.consumer.InputChannel;
-import org.apache.flink.runtime.io.network.partition.consumer.LocalInputChannel;
-import org.apache.flink.runtime.io.network.partition.consumer.RemoteInputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
 
 import java.util.HashMap;
@@ -21,18 +19,43 @@ import java.util.Optional;
 public class HackInputGateChannelQueueWatcher {
 	private static Map<InputChannelInfo, Long> inputChannelToQueueTimeStamp = new HashMap<>();
 
-	public static void dumpLengthOfInputChannelWithData(SingleInputGate inputGate, boolean queueOrGet) {
-		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
-			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
-			"] in length " + (queueOrGet ? "after [queueChannel()]" : "before [getChannel()]"));
+	public static void dumpLengthOfInputChannelWithData(SingleInputGate inputGate, InputChannel inputChannel, boolean queueOrGet) {
+		if (queueOrGet) {
+			printQueueChannel(inputGate, inputChannel);
+		} else {
+			printGetChannel(inputGate, inputChannel);
+		}
 	}
 
-	public static void tickInputChannelMoreAvailable(InputChannel inputChannel) {
+	private static void printQueueChannel(SingleInputGate inputGate, InputChannel inputChannel) {
+		String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
+		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
+			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
+			"] in length " + "after queueChannel() for Channel [" + channelInfo + "]");
+	}
+
+	private static void printQueueMoreAvailable(SingleInputGate inputGate, InputChannel inputChannel) {
+		String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
+		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
+			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
+			"] in length " + "after queue channel for more available for Channel [" + channelInfo + "]");
+	}
+
+	private static void printGetChannel(SingleInputGate inputGate, InputChannel inputChannel) {
+		String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
+		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
+			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
+			"] in length " + "after getChannel() for Channel [" + channelInfo + "]");
+	}
+
+	public static void tickInputChannelMoreAvailable(SingleInputGate inputGate, InputChannel inputChannel) {
 		inputChannelToQueueTimeStamp.put(inputChannel.getChannelInfo(), System.currentTimeMillis());
+		printQueueMoreAvailable(inputGate, inputChannel);
 	}
 
 	public static void tickInputChannelQueueTimestamp(InputChannel inputChannel) {
 		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
+			System.out.println("[ERROR!!!] Never add a same InputChannel to the inputChannelWithData queue");
 			return;
 		} else {
 			inputChannelToQueueTimeStamp.put(inputChannel.getChannelInfo(), System.currentTimeMillis());
@@ -48,19 +71,10 @@ public class HackInputGateChannelQueueWatcher {
 		}
 
 		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
-			if (inputChannel instanceof LocalInputChannel) {
-				LocalInputChannel localInputChannel = (LocalInputChannel) inputChannel;
-				System.out.println("LocalInputChannel [" + HackStringUtil.convertLocalInputChannelToString(localInputChannel) +
-					"] has wait from queueChannel() to getChannel() for [" + (System.currentTimeMillis() - queueTimestamp) +
-					"] ms, and transfer buffer [" + bufferSize + "] Bytes");
-			} else if (inputChannel instanceof RemoteInputChannel) {
-				RemoteInputChannel remoteInputChannel = (RemoteInputChannel) inputChannel;
-				System.out.println("RemoteInputChannel [" + HackStringUtil.convertRemoteInputChannelToString(remoteInputChannel) +
-					"] has wait from queueChannel() to getChannel() for [" + (System.currentTimeMillis() - queueTimestamp) +
-					"] ms, and transfer buffer [" + bufferSize + "] Bytes");
-			} else {
-				System.out.println("[ERROR!!!] cannot extract the InputChannel [" + inputChannel.getChannelInfo() + "]");
-			}
+			String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
+			System.out.println("InputChannel [" + channelInfo + "] has wait from queueChannel() to getChannel() for [" +
+				(System.currentTimeMillis() - queueTimestamp) +
+				"] ms, and transfer buffer [" + bufferSize + "] Bytes");
 		} else {
 			System.out.println("[ERROR!!!] have not queued InputChannel [" + inputChannel.getChannelInfo() + "]");
 		}
