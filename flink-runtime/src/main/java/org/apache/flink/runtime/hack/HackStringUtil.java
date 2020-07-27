@@ -40,8 +40,11 @@ public class HackStringUtil {
 
 	public static String convertRemoteInputChannelToString(RemoteInputChannel inputChannel) {
 		SingleInputGate inputGate = inputChannel.getInputGate();
+		String inputChannelId = inputChannel.getInputChannelId().toString();
 
-		return "RemoteInputChannel [" + inputChannel +
+//		return "RemoteInputChannel [" + inputChannel +
+//			"], for inputGate [" + convertInputGateToString(inputGate) + "]";
+		return "RemoteInputChannel [" + inputChannelId  +
 			"], for inputGate [" + convertInputGateToString(inputGate) + "]";
 	}
 
