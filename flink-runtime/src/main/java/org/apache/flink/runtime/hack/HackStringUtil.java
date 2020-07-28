@@ -16,7 +16,9 @@ import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
  */
 public class HackStringUtil {
 	public static String convertInputChannelToString(InputChannel inputChannel) {
-		if (inputChannel instanceof LocalInputChannel) {
+		if (inputChannel == null) {
+			return "InputChannel is null";
+		} else if (inputChannel instanceof LocalInputChannel) {
 			return convertLocalInputChannelToString((LocalInputChannel) inputChannel);
 		} else if (inputChannel instanceof RemoteInputChannel) {
 			return convertRemoteInputChannelToString((RemoteInputChannel) inputChannel);

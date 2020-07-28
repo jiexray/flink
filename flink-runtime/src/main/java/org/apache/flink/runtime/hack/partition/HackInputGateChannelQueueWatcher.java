@@ -72,7 +72,8 @@ public class HackInputGateChannelQueueWatcher {
 			System.out.println("[BUG???] InputChannel has already been null, and transfer data [" + bufferSize + "] Bytes");
 			return;
 		}
-		System.out.println("Why inputChannel is null???");
+		System.out.println("Why inputChannel is null???, transfer buffer [" + bufferSize +
+			"] Bytes, and inputChannel [" + HackStringUtil.convertInputChannelToString(inputChannel) + "]");
 //		long queueTimestamp = inputChannelToQueueTimeStamp.get(inputChannel.getChannelInfo());
 //
 //		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
