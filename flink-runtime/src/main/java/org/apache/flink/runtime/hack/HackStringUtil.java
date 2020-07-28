@@ -33,21 +33,21 @@ public class HackStringUtil {
 
 	public static String convertLocalInputChannelToString(LocalInputChannel inputChannel) {
 		SingleInputGate inputGate = inputChannel.getInputGate();
-		int gateIndex = inputGate.getGateIndex();
 
 		InputChannelInfo channelInfo = inputChannel.getChannelInfo();
 
-		return "LocalInputChannel with channel info [" + channelInfo + "]";
+		return "LocalInputChannel with channel info [" + channelInfo +
+			"] on Task [" + inputGate.getOwningTaskName() + "]";
 	}
 
 	public static String convertRemoteInputChannelToString(RemoteInputChannel inputChannel) {
 		SingleInputGate inputGate = inputChannel.getInputGate();
 		String inputChannelId = inputChannel.getInputChannelId().toString();
+		InputChannelInfo channelInfo = inputChannel.getChannelInfo();
 
-//		return "RemoteInputChannel [" + inputChannel +
-//			"], for inputGate [" + convertInputGateToString(inputGate) + "]";
 		return "RemoteInputChannel [" + inputChannelId  +
-			"], for inputGate [" + convertInputGateToString(inputGate) + "]";
+			"], with channel info [" + channelInfo +
+			"] on Task [" + inputGate.getOwningTaskName() + "]";
 	}
 
 	public static String convertInputGateToString (SingleInputGate inputGate) {

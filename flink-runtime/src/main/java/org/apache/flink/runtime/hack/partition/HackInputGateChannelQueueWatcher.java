@@ -17,7 +17,31 @@ import java.util.concurrent.ConcurrentHashMap;
  * to compute the queue delay of an inputChannel.
  */
 public class HackInputGateChannelQueueWatcher {
-	private static Map<InputChannelInfo, Long> inputChannelToQueueTimeStamp = new ConcurrentHashMap<>();
+	/**
+	 * A class for identifying an inputChannel in a global view.
+	 * There may be multiple StreamTask in a given TaskManager, which results in
+	 * multiple InputGate. An inputChannel will have a same ChannelInfo, for example
+	 * InputChannelInfo {gateIdx=0, inputChannelIdx=0}.
+	 */
+	private static class GlobalInputChannelInfo {
+		private String owningTaskName;
+		private InputChannelInfo channelInfo;
+
+		public GlobalInputChannelInfo(String owningTaskName, InputChannelInfo inputChannelInfo) {
+			this.owningTaskName = owningTaskName;
+			this.channelInfo = inputChannelInfo;
+		}
+
+		@Override
+		public String toString() {
+			return "GlobalInputChannelInfo{" +
+				"owningTaskName='" + owningTaskName + '\'' +
+				", channelInfo=" + channelInfo +
+				'}';
+		}
+	}
+
+	private static Map<GlobalInputChannelInfo, Long> inputChannelToQueueTimeStamp = new ConcurrentHashMap<>();
 
 	private static Object lock = new Object();
 
@@ -56,12 +80,14 @@ public class HackInputGateChannelQueueWatcher {
 	}
 
 	public static void tickInputChannelQueueTimestamp(InputChannel inputChannel) {
+		String owningTaskName = inputChannel.getInputGate().getOwningTaskName();
 		synchronized (lock) {
 			if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
 				System.out.println("[ERROR!!!] Never add a same InputChannel to the inputChannelWithData queue");
 				return;
 			} else {
-				inputChannelToQueueTimeStamp.put(inputChannel.getChannelInfo(), System.currentTimeMillis());
+				inputChannelToQueueTimeStamp.put(new GlobalInputChannelInfo(owningTaskName, inputChannel.getChannelInfo()),
+					System.currentTimeMillis());
 			}
 		}
 	}
@@ -72,14 +98,12 @@ public class HackInputGateChannelQueueWatcher {
 			bufferSize = result.get().buffer().getSize();
 		}
 
-//		System.out.println("Why inputChannel is null???, transfer buffer [" + bufferSize +
-//			"] Bytes, and inputChannel [" + HackStringUtil.convertInputChannelToString(inputChannel) +
-//			"], inputChannelToQueueTimestamp map [" + inputChannelToQueueTimeStamp + "]");
-
+		String owningTaskName = inputChannel.getInputGate().getOwningTaskName();
 		synchronized (lock) {
-			if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
-				long queueTimestamp = inputChannelToQueueTimeStamp.get(inputChannel.getChannelInfo());
-				inputChannelToQueueTimeStamp.remove(inputChannel.getChannelInfo());
+			GlobalInputChannelInfo globalInputChannelInfo = new GlobalInputChannelInfo(owningTaskName, inputChannel.getChannelInfo());
+			if (inputChannelToQueueTimeStamp.containsKey(globalInputChannelInfo)) {
+				long queueTimestamp = inputChannelToQueueTimeStamp.get(globalInputChannelInfo);
+				inputChannelToQueueTimeStamp.remove(globalInputChannelInfo);
 
 				String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
 				System.out.println("InputChannel [" + channelInfo + "] has wait from queueChannel() to getChannel() for [" +
