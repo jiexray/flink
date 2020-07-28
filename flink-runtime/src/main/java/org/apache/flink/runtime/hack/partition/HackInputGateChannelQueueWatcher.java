@@ -43,8 +43,12 @@ public class HackInputGateChannelQueueWatcher {
 
 		@Override
 		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
 			GlobalInputChannelInfo that = (GlobalInputChannelInfo) o;
 			return Objects.equals(owningTaskName, that.owningTaskName) &&
 				Objects.equals(channelInfo, that.channelInfo);
