@@ -75,16 +75,17 @@ public class HackInputGateChannelQueueWatcher {
 		System.out.println("Why inputChannel is null???, transfer buffer [" + bufferSize +
 			"] Bytes, and inputChannel [" + HackStringUtil.convertInputChannelToString(inputChannel) +
 			"], inputChannelToQueueTimestamp map [" + inputChannelToQueueTimeStamp + "]");
-//		long queueTimestamp = inputChannelToQueueTimeStamp.get(inputChannel.getChannelInfo());
-//
-//		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
-//			inputChannelToQueueTimeStamp.remove(inputChannel.getChannelInfo());
-//			String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
-//			System.out.println("InputChannel [" + channelInfo + "] has wait from queueChannel() to getChannel() for [" +
-//				(System.currentTimeMillis() - queueTimestamp) +
-//				"] ms, and transfer buffer [" + bufferSize + "] Bytes");
-//		} else {
-//			System.out.println("[ERROR!!!] have not queued InputChannel [" + inputChannel.getChannelInfo() + "]");
-//		}
+
+		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
+			long queueTimestamp = inputChannelToQueueTimeStamp.get(inputChannel.getChannelInfo());
+			inputChannelToQueueTimeStamp.remove(inputChannel.getChannelInfo());
+
+			String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
+			System.out.println("InputChannel [" + channelInfo + "] has wait from queueChannel() to getChannel() for [" +
+				(System.currentTimeMillis() - queueTimestamp) +
+				"] ms, and transfer buffer [" + bufferSize + "] Bytes");
+		} else {
+			System.out.println("[ERROR!!!] have not queued InputChannel [" + inputChannel.getChannelInfo() + "]");
+		}
 	}
 }
