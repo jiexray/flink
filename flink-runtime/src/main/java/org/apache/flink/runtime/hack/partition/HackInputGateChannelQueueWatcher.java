@@ -103,7 +103,8 @@ public class HackInputGateChannelQueueWatcher {
 		synchronized (lock) {
 			GlobalInputChannelInfo globalInputChannelInfo = new GlobalInputChannelInfo(owningTaskName, inputChannel.getChannelInfo());
 			if (inputChannelToQueueTimeStamp.containsKey(globalInputChannelInfo)) {
-				System.out.println("[ERROR!!!] Never add a same InputChannel to the inputChannelWithData queue");
+				System.out.println("[ERROR!!!] Never add a same InputChannel [" + HackStringUtil.convertInputChannelToString(inputChannel) +
+					"] to the inputChannelWithData queue");
 				return;
 			} else {
 				inputChannelToQueueTimeStamp.put(globalInputChannelInfo, System.currentTimeMillis());
@@ -124,12 +125,11 @@ public class HackInputGateChannelQueueWatcher {
 				long queueTimestamp = inputChannelToQueueTimeStamp.get(globalInputChannelInfo);
 				inputChannelToQueueTimeStamp.remove(globalInputChannelInfo);
 
-				String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
-				System.out.println("InputChannel [" + channelInfo + "] has wait from queueChannel() to getChannel() for [" +
-					(System.currentTimeMillis() - queueTimestamp) +
+				System.out.println("InputChannel [" + HackStringUtil.convertInputChannelToString(inputChannel) +
+					"] has wait from queueChannel() to getChannel() for [" + (System.currentTimeMillis() - queueTimestamp) +
 					"] ms, and transfer buffer [" + bufferSize + "] Bytes");
 			} else {
-				System.out.println("[ERROR!!!] have not queued InputChannel [" + inputChannel.getChannelInfo() + "]");
+				System.out.println("[ERROR!!!] have not queued InputChannel [" + HackStringUtil.convertInputChannelToString(inputChannel) + "]");
 			}
 		}
 	}
