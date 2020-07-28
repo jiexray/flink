@@ -6,6 +6,7 @@ import org.apache.flink.runtime.io.network.partition.consumer.InputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,6 +39,20 @@ public class HackInputGateChannelQueueWatcher {
 				"owningTaskName='" + owningTaskName + '\'' +
 				", channelInfo=" + channelInfo +
 				'}';
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			GlobalInputChannelInfo that = (GlobalInputChannelInfo) o;
+			return Objects.equals(owningTaskName, that.owningTaskName) &&
+				Objects.equals(channelInfo, that.channelInfo);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(owningTaskName, channelInfo);
 		}
 	}
 
@@ -82,12 +97,12 @@ public class HackInputGateChannelQueueWatcher {
 	public static void tickInputChannelQueueTimestamp(InputChannel inputChannel) {
 		String owningTaskName = inputChannel.getInputGate().getOwningTaskName();
 		synchronized (lock) {
-			if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
+			GlobalInputChannelInfo globalInputChannelInfo = new GlobalInputChannelInfo(owningTaskName, inputChannel.getChannelInfo());
+			if (inputChannelToQueueTimeStamp.containsKey(globalInputChannelInfo)) {
 				System.out.println("[ERROR!!!] Never add a same InputChannel to the inputChannelWithData queue");
 				return;
 			} else {
-				inputChannelToQueueTimeStamp.put(new GlobalInputChannelInfo(owningTaskName, inputChannel.getChannelInfo()),
-					System.currentTimeMillis());
+				inputChannelToQueueTimeStamp.put(globalInputChannelInfo, System.currentTimeMillis());
 			}
 		}
 	}
