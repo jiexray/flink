@@ -5,9 +5,9 @@ import org.apache.flink.runtime.hack.HackStringUtil;
 import org.apache.flink.runtime.io.network.partition.consumer.InputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This is class is for monitoring the inputChannelWithData queue in
@@ -17,7 +17,7 @@ import java.util.Optional;
  * to compute the queue delay of an inputChannel.
  */
 public class HackInputGateChannelQueueWatcher {
-	private static Map<InputChannelInfo, Long> inputChannelToQueueTimeStamp = new HashMap<>();
+	private static Map<InputChannelInfo, Long> inputChannelToQueueTimeStamp = new ConcurrentHashMap<>();
 
 	public static void dumpLengthOfInputChannelWithData(SingleInputGate inputGate, InputChannel inputChannel, boolean queueOrGet) {
 		if (queueOrGet) {
@@ -73,7 +73,8 @@ public class HackInputGateChannelQueueWatcher {
 			return;
 		}
 		System.out.println("Why inputChannel is null???, transfer buffer [" + bufferSize +
-			"] Bytes, and inputChannel [" + HackStringUtil.convertInputChannelToString(inputChannel) + "]");
+			"] Bytes, and inputChannel [" + HackStringUtil.convertInputChannelToString(inputChannel) +
+			"], inputChannelToQueueTimestamp map [" + inputChannelToQueueTimeStamp + "]");
 //		long queueTimestamp = inputChannelToQueueTimeStamp.get(inputChannel.getChannelInfo());
 //
 //		if (inputChannelToQueueTimeStamp.containsKey(inputChannel.getChannelInfo())) {
