@@ -36,6 +36,7 @@ import org.apache.flink.runtime.io.network.partition.consumer.InputChannel;
 import org.apache.flink.runtime.plugable.DeserializationDelegate;
 import org.apache.flink.runtime.plugable.NonReusingDeserializationDelegate;
 import org.apache.flink.streaming.api.watermark.Watermark;
+import org.apache.flink.streaming.hack.partition.HackInputGatePollTimeRecorder;
 import org.apache.flink.streaming.hack.serializehack.HackDeserializationWatcher;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElementSerializer;
@@ -139,6 +140,7 @@ public final class StreamTaskNetworkInput<T> implements StreamTaskInput<T> {
 				}
 			}
 
+			HackInputGatePollTimeRecorder.tickPollDataFromInputGate(checkpointedInputGate);
 			Optional<BufferOrEvent> bufferOrEvent = checkpointedInputGate.pollNext();
 			if (bufferOrEvent.isPresent()) {
 				// return to the mailbox after receiving a checkpoint barrier to avoid processing of
