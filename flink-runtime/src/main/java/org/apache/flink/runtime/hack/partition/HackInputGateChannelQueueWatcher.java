@@ -1,6 +1,7 @@
 package org.apache.flink.runtime.hack.partition;
 
 import org.apache.flink.runtime.checkpoint.channel.InputChannelInfo;
+import org.apache.flink.runtime.hack.HackConfig;
 import org.apache.flink.runtime.hack.HackStringUtil;
 import org.apache.flink.runtime.io.network.partition.consumer.InputChannel;
 import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
@@ -65,6 +66,10 @@ public class HackInputGateChannelQueueWatcher {
 	private static Object lock = new Object();
 
 	public static void dumpLengthOfInputChannelWithData(SingleInputGate inputGate, InputChannel inputChannel, boolean queueOrGet) {
+		if (!HackConfig.HACK_PARTITION_REQUEST) {
+			return;
+		}
+
 		if (queueOrGet) {
 			printQueueChannel(inputGate, inputChannel);
 		} else {
@@ -93,12 +98,24 @@ public class HackInputGateChannelQueueWatcher {
 			"] in length " + "after getChannel() for Channel [" + channelInfo + "]");
 	}
 
-	public static void tickInputChannelMoreAvailable(SingleInputGate inputGate, InputChannel inputChannel) {
+	public static void tickInputChannelMoreAvailable(SingleInputGate inputGate, InputChannel inputChannel){
+		if (HackConfig.HACK_PARTITION_REQUEST) {
+			doTickInputChannelMoreAvailable(inputGate, inputChannel);
+		}
+	}
+
+	private static void doTickInputChannelMoreAvailable(SingleInputGate inputGate, InputChannel inputChannel) {
 		tickInputChannelQueueTimestamp(inputChannel);
 		printQueueMoreAvailable(inputGate, inputChannel);
 	}
 
 	public static void tickInputChannelQueueTimestamp(InputChannel inputChannel) {
+		if (HackConfig.HACK_PARTITION_REQUEST) {
+			doTickInputChannelQueueTimestamp(inputChannel);
+		}
+	}
+
+	private static void doTickInputChannelQueueTimestamp(InputChannel inputChannel) {
 		String owningTaskName = inputChannel.getInputGate().getOwningTaskName();
 		synchronized (lock) {
 			GlobalInputChannelInfo globalInputChannelInfo = new GlobalInputChannelInfo(owningTaskName, inputChannel.getChannelInfo());
@@ -113,6 +130,12 @@ public class HackInputGateChannelQueueWatcher {
 	}
 
 	public static void tickInputChannelGetTimestamp(InputChannel inputChannel, Optional<InputChannel.BufferAndAvailability> result) {
+		if (HackConfig.HACK_PARTITION_REQUEST) {
+			doTickInputChannelGetTimestamp(inputChannel, result);
+		}
+	}
+
+	private static void doTickInputChannelGetTimestamp(InputChannel inputChannel, Optional<InputChannel.BufferAndAvailability> result) {
 		int bufferSize = 0;
 		if (result.isPresent()) {
 			bufferSize = result.get().buffer().getSize();

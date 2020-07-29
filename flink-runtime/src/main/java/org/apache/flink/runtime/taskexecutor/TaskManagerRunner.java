@@ -35,6 +35,7 @@ import org.apache.flink.runtime.concurrent.ScheduledExecutor;
 import org.apache.flink.runtime.entrypoint.FlinkParseException;
 import org.apache.flink.runtime.externalresource.ExternalResourceInfoProvider;
 import org.apache.flink.runtime.externalresource.ExternalResourceUtils;
+import org.apache.flink.runtime.hack.HackConfig;
 import org.apache.flink.runtime.heartbeat.HeartbeatServices;
 import org.apache.flink.runtime.highavailability.HighAvailabilityServices;
 import org.apache.flink.runtime.highavailability.HighAvailabilityServicesUtils;
@@ -308,6 +309,9 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 	public static void runTaskManagerSecurely(String[] args, ResourceID resourceID) {
 		try {
 			final Configuration configuration = loadConfiguration(args);
+
+			// set up the hacking config
+			HackConfig.initialize(configuration);
 
 			final PluginManager pluginManager = PluginUtils.createPluginManagerFromRootFolder(configuration);
 			FileSystem.initialize(configuration, pluginManager);
