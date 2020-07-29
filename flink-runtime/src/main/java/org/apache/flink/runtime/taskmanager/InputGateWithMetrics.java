@@ -75,6 +75,10 @@ public class InputGateWithMetrics extends IndexedInputGate {
 		return inputGate.getGateIndex();
 	}
 
+	public IndexedInputGate getInputGate() {
+		return inputGate;
+	}
+
 	@Override
 	public boolean isFinished() {
 		return inputGate.isFinished();

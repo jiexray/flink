@@ -2,6 +2,7 @@ package org.apache.flink.streaming.hack.partition;
 
 import org.apache.flink.runtime.io.network.partition.consumer.InputGate;
 import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
+import org.apache.flink.runtime.taskmanager.InputGateWithMetrics;
 import org.apache.flink.streaming.runtime.io.CheckpointedInputGate;
 
 import java.util.HashMap;
@@ -18,22 +19,29 @@ public class HackInputGatePollTimeRecorder {
 	public static void tickPollDataFromInputGate(CheckpointedInputGate checkpointedInputGate) {
 		InputGate inputGate = checkpointedInputGate.getInputGate();
 
-		if (inputGate instanceof SingleInputGate) {
-			SingleInputGate singleInputGate = (SingleInputGate) inputGate;
-			String taskName = singleInputGate.getOwningTaskName();
+		if (inputGate instanceof InputGateWithMetrics) {
+			InputGateWithMetrics inputGateWithMetrics = (InputGateWithMetrics) inputGate;
+			InputGate inputGate1 = inputGateWithMetrics.getInputGate();
+			if (inputGate1 instanceof SingleInputGate) {
+				SingleInputGate singleInputGate = (SingleInputGate) inputGate1;
+				String taskName = singleInputGate.getOwningTaskName();
 
-			synchronized (lock) {
-				if (streamTaskNameToLastPollDataTimestamps.containsKey(taskName)) {
-					long lastPollTimeStamp = streamTaskNameToLastPollDataTimestamps.get(taskName);
-					System.out.println("Task [" + taskName +
-						"] inputGate poll data interval [" + (System.currentTimeMillis() - lastPollTimeStamp) +
-						"] ms");
+				synchronized (lock) {
+					if (streamTaskNameToLastPollDataTimestamps.containsKey(taskName)) {
+						long lastPollTimeStamp = streamTaskNameToLastPollDataTimestamps.get(taskName);
+						System.out.println("Task [" + taskName +
+							"] inputGate poll data interval [" + (System.currentTimeMillis() - lastPollTimeStamp) +
+							"] ms");
+					}
+					streamTaskNameToLastPollDataTimestamps.put(taskName, System.currentTimeMillis());
 				}
-				streamTaskNameToLastPollDataTimestamps.put(taskName, System.currentTimeMillis());
+			} else {
+				System.out.println("[ERROR!!!] IndexedInputGate [" + inputGate +
+					"] is not SingleInputGate");
 			}
 		} else {
 			System.out.println("[ERROR!!!] inputGate [" + inputGate +
-				"] is not SingleInputGate");
+				"] is not InputGateWithMetrics");
 		}
 	}
 }
