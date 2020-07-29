@@ -7,9 +7,9 @@ import org.apache.flink.configuration.HackOptions;
  * Configurations of hacking in runtime.
  */
 public class HackConfig {
-	public static boolean HACK_PARTITION_REQUEST;
+	public static boolean hackPartitionRequest;
 
 	public static void initialize(Configuration configuration) {
-		HACK_PARTITION_REQUEST = configuration.getBoolean(HackOptions.HACK_PARTITION_REQUEST);
+		hackPartitionRequest = configuration.getBoolean(HackOptions.HACK_PARTITION_REQUEST);
 	}
 }

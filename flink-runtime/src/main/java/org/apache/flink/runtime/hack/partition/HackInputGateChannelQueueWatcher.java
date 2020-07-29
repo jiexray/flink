@@ -66,7 +66,7 @@ public class HackInputGateChannelQueueWatcher {
 	private static Object lock = new Object();
 
 	public static void dumpLengthOfInputChannelWithData(SingleInputGate inputGate, InputChannel inputChannel, boolean queueOrGet) {
-		if (!HackConfig.HACK_PARTITION_REQUEST) {
+		if (!HackConfig.hackPartitionRequest) {
 			return;
 		}
 
@@ -99,7 +99,7 @@ public class HackInputGateChannelQueueWatcher {
 	}
 
 	public static void tickInputChannelMoreAvailable(SingleInputGate inputGate, InputChannel inputChannel){
-		if (HackConfig.HACK_PARTITION_REQUEST) {
+		if (HackConfig.hackPartitionRequest) {
 			doTickInputChannelMoreAvailable(inputGate, inputChannel);
 		}
 	}
@@ -110,7 +110,7 @@ public class HackInputGateChannelQueueWatcher {
 	}
 
 	public static void tickInputChannelQueueTimestamp(InputChannel inputChannel) {
-		if (HackConfig.HACK_PARTITION_REQUEST) {
+		if (HackConfig.hackPartitionRequest) {
 			doTickInputChannelQueueTimestamp(inputChannel);
 		}
 	}
@@ -130,7 +130,7 @@ public class HackInputGateChannelQueueWatcher {
 	}
 
 	public static void tickInputChannelGetTimestamp(InputChannel inputChannel, Optional<InputChannel.BufferAndAvailability> result) {
-		if (HackConfig.HACK_PARTITION_REQUEST) {
+		if (HackConfig.hackPartitionRequest) {
 			doTickInputChannelGetTimestamp(inputChannel, result);
 		}
 	}
