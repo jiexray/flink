@@ -135,7 +135,9 @@ public final class StreamTaskNetworkInput<T> implements StreamTaskInput<T> {
 				}
 
 				if (result.isFullRecord()) {
+					HackInputGatePollTimeRecorder.tickBeforeProcessElement();
 					processElement(deserializationDelegate.getInstance(), output);
+					HackInputGatePollTimeRecorder.tickAfterProcessElement(checkpointedInputGate);
 					return InputStatus.MORE_AVAILABLE;
 				}
 			}
