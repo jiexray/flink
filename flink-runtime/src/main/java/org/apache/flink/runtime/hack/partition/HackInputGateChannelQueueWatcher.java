@@ -79,23 +79,23 @@ public class HackInputGateChannelQueueWatcher {
 
 	private static void printQueueChannel(SingleInputGate inputGate, InputChannel inputChannel) {
 		String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
-		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
-			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
-			"] in length " + "after queueChannel() for Channel [" + channelInfo + "]");
+//		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
+//			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
+//			"] in length " + "after queueChannel() for Channel [" + channelInfo + "]");
 	}
 
 	private static void printQueueMoreAvailable(SingleInputGate inputGate, InputChannel inputChannel) {
 		String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
-		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
-			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
-			"] in length " + "after queue channel for more available for Channel [" + channelInfo + "]");
+//		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
+//			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
+//			"] in length " + "after queue channel for more available for Channel [" + channelInfo + "]");
 	}
 
 	private static void printGetChannel(SingleInputGate inputGate, InputChannel inputChannel) {
 		String channelInfo = HackStringUtil.convertInputChannelToString(inputChannel);
-		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
-			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
-			"] in length " + "after getChannel() for Channel [" + channelInfo + "]");
+//		System.out.println("SingleInputGate [" + HackStringUtil.convertInputGateToString(inputGate) +
+//			"] queue of inputChannelWithData is [" + inputGate.getNumberOfInputChannelWithData() +
+//			"] in length " + "after getChannel() for Channel [" + channelInfo + "]");
 	}
 
 	public static void tickInputChannelMoreAvailable(SingleInputGate inputGate, InputChannel inputChannel){

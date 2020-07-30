@@ -3,7 +3,6 @@ package org.apache.flink.streaming.hack.partition;
 import org.apache.flink.runtime.io.network.partition.consumer.InputGate;
 import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
 import org.apache.flink.runtime.taskmanager.InputGateWithMetrics;
-import org.apache.flink.streaming.hack.StreamingHackStringUtils;
 import org.apache.flink.streaming.runtime.io.CheckpointedInputGate;
 
 import java.util.HashMap;
@@ -53,12 +52,12 @@ public class HackInputGatePollTimeRecorder {
 	 * StreamTask. The previous {@code preProcessElementTimestamp} is wrong.
 	 */
 	public static void tickBeforeProcessElement() {
-		preProcessElementTimestamp = System.currentTimeMillis();
+//		preProcessElementTimestamp = System.currentTimeMillis();
 	}
 
 	public static void tickAfterProcessElement(CheckpointedInputGate checkpointedInputGate) {
-		String taskName = StreamingHackStringUtils.convertCheckpointedInputGateToTaskName(checkpointedInputGate);
-		System.out.println("Task [" + taskName + "] process an record cost [" + (System.currentTimeMillis() - preProcessElementTimestamp) +
-			"] ms");
+//		String taskName = StreamingHackStringUtils.convertCheckpointedInputGateToTaskName(checkpointedInputGate);
+//		System.out.println("Task [" + taskName + "] process an record cost [" + (System.currentTimeMillis() - preProcessElementTimestamp) +
+//			"] ms");
 	}
 }

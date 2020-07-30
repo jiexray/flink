@@ -61,6 +61,7 @@ import org.apache.flink.streaming.api.operators.MailboxExecutor;
 import org.apache.flink.streaming.api.operators.StreamOperator;
 import org.apache.flink.streaming.api.operators.StreamTaskStateInitializer;
 import org.apache.flink.streaming.api.operators.StreamTaskStateInitializerImpl;
+import org.apache.flink.streaming.hack.partition.HackInputOutputAvailableWatcher;
 import org.apache.flink.streaming.runtime.io.RecordWriterOutput;
 import org.apache.flink.streaming.runtime.io.StreamInputProcessor;
 import org.apache.flink.streaming.runtime.partitioner.ConfigurableStreamPartitioner;
@@ -360,10 +361,14 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 	@VisibleForTesting
 	CompletableFuture<?> getInputOutputJointFuture(InputStatus status) {
 		if (status == InputStatus.NOTHING_AVAILABLE && !recordWriter.isAvailable()) {
+			HackInputOutputAvailableWatcher.notifyInputProcessorUnavailable(getName());
+			HackInputOutputAvailableWatcher.notifyRecordWriterUnavailable(getName());
 			return CompletableFuture.allOf(inputProcessor.getAvailableFuture(), recordWriter.getAvailableFuture());
 		} else if (status == InputStatus.NOTHING_AVAILABLE) {
+			HackInputOutputAvailableWatcher.notifyInputProcessorUnavailable(getName());
 			return inputProcessor.getAvailableFuture();
 		} else {
+			HackInputOutputAvailableWatcher.notifyRecordWriterUnavailable(getName());
 			return recordWriter.getAvailableFuture();
 		}
 	}
