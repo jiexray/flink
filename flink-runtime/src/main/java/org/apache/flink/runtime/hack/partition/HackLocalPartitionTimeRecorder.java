@@ -3,9 +3,6 @@ package org.apache.flink.runtime.hack.partition;
 import org.apache.flink.runtime.hack.HackConfig;
 import org.apache.flink.runtime.io.network.buffer.Buffer;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 /**
  * Time recorder for local partition request:
  * 1. buffer notify;
