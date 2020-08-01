@@ -1,6 +1,7 @@
 package org.apache.flink.runtime.hack.partition;
 
 import org.apache.flink.runtime.checkpoint.channel.ResultSubpartitionInfo;
+import org.apache.flink.runtime.hack.HackConfig;
 import org.apache.flink.runtime.hack.HackStringUtil;
 import org.apache.flink.runtime.io.network.partition.BufferAvailabilityListener;
 import org.apache.flink.runtime.io.network.partition.PipelinedSubpartition;
@@ -12,15 +13,18 @@ import org.apache.flink.runtime.io.network.partition.ResultPartition;
  * and {@link org.apache.flink.runtime.io.network.partition.BoundedBlockingSubpartition}.
  */
 public class HackSubpartitionWatcher {
-	private static boolean isDebugSubpartitionFlush = false;
 	public static void printPipelinedSubpartitionFlush(PipelinedSubpartition subpartition, PipelinedSubpartitionView dataView) {
+		if (HackConfig.hackAll) {
+			doPrintPipelinedSubpartitionFlush(subpartition, dataView);
+		}
+	}
+
+	private static void doPrintPipelinedSubpartitionFlush(PipelinedSubpartition subpartition, PipelinedSubpartitionView dataView) {
 		ResultSubpartitionInfo resultSubpartitionInfo = subpartition.getSubpartitionInfo();
 		BufferAvailabilityListener availabilityListener;
 		ResultPartition parentPartition = subpartition.getParent();
 
-		if (!isDebugSubpartitionFlush){
-			return;
-		} else if (dataView != null) {
+		if (dataView != null) {
 			availabilityListener = dataView.getAvailabilityListener();
 			System.out.println("Subpartition info [" + resultSubpartitionInfo +
 				"], " + "parent ResultPartition info [" + HackStringUtil.convertResultPartitionToString(parentPartition) +

@@ -3,6 +3,7 @@ package org.apache.flink.streaming.hack.partition;
 import org.apache.flink.runtime.io.network.partition.consumer.InputGate;
 import org.apache.flink.runtime.io.network.partition.consumer.SingleInputGate;
 import org.apache.flink.runtime.taskmanager.InputGateWithMetrics;
+import org.apache.flink.streaming.hack.StreamingHackConfig;
 import org.apache.flink.streaming.runtime.io.CheckpointedInputGate;
 
 import java.util.HashMap;
@@ -19,6 +20,12 @@ public class HackInputGatePollTimeRecorder {
 	private static long preProcessElementTimestamp;
 
 	public static void tickPollDataFromInputGate(CheckpointedInputGate checkpointedInputGate) {
+		if (StreamingHackConfig.hackAll) {
+			doTickPollDataFromInputGate(checkpointedInputGate);
+		}
+	}
+
+	private static void doTickPollDataFromInputGate(CheckpointedInputGate checkpointedInputGate) {
 		InputGate inputGate = checkpointedInputGate.getInputGate();
 
 		if (inputGate instanceof InputGateWithMetrics) {

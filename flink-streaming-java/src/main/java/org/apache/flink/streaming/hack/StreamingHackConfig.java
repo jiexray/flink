@@ -1,17 +1,15 @@
-package org.apache.flink.runtime.hack;
+package org.apache.flink.streaming.hack;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.HackOptions;
 
 /**
- * Configurations of hacking in runtime.
+ * Configurations of hacking in streaming.
  */
-public class HackConfig {
-	public static boolean hackPartitionRequest;
+public class StreamingHackConfig {
 	public static boolean hackAll;
 
 	public static void initialize(Configuration configuration) {
-		hackPartitionRequest = configuration.getBoolean(HackOptions.HACK_PARTITION_REQUEST);
 		hackAll = configuration.getBoolean(HackOptions.HACK_ALL);
 	}
 }

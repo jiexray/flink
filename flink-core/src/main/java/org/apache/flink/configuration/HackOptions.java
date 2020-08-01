@@ -10,4 +10,10 @@ public class HackOptions {
 		key("hack.partition-request")
 		.defaultValue(false)
 		.withDescription("Switch on/off hacking on partition request");
+
+	public static final ConfigOption<Boolean> HACK_ALL =
+		key("hack.all")
+		.defaultValue(false)
+		.withDescription("Switch off all hacking parts");
+
 }

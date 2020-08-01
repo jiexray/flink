@@ -202,7 +202,6 @@ public class LocalInputChannel extends InputChannel implements BufferAvailabilit
 		}
 
 		BufferAndBacklog next = subpartitionView.getNextBuffer();
-		HackLocalPartitionTimeRecorder.tickDataPolledByLocalInputChannel(this, next);
 
 		if (next == null) {
 			if (subpartitionView.isReleased()) {
@@ -227,7 +226,6 @@ public class LocalInputChannel extends InputChannel implements BufferAvailabilit
 
 	@Override
 	public void notifyDataAvailable() {
-		HackLocalPartitionTimeRecorder.tickNotifyDataAvailable(this);
 		notifyChannelNonEmpty();
 	}
 

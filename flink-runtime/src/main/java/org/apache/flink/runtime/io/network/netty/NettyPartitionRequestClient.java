@@ -19,7 +19,6 @@
 package org.apache.flink.runtime.io.network.netty;
 
 import org.apache.flink.runtime.event.TaskEvent;
-import org.apache.flink.runtime.hack.partition.HackRemotePartitionTimeRecorder;
 import org.apache.flink.runtime.io.network.ConnectionID;
 import org.apache.flink.runtime.io.network.NetworkClientHandler;
 import org.apache.flink.runtime.io.network.PartitionRequestClient;
@@ -27,11 +26,9 @@ import org.apache.flink.runtime.io.network.netty.exception.LocalTransportExcepti
 import org.apache.flink.runtime.io.network.partition.ResultPartitionID;
 import org.apache.flink.runtime.io.network.partition.consumer.RemoteInputChannel;
 import org.apache.flink.runtime.util.AtomicDisposableReferenceCounter;
-
 import org.apache.flink.shaded.netty4.io.netty.channel.Channel;
 import org.apache.flink.shaded.netty4.io.netty.channel.ChannelFuture;
 import org.apache.flink.shaded.netty4.io.netty.channel.ChannelFutureListener;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,14 +110,10 @@ public class NettyPartitionRequestClient implements PartitionRequestClient {
 		final PartitionRequest request = new PartitionRequest(
 				partitionId, subpartitionIndex, inputChannel.getInputChannelId(), inputChannel.getInitialCredit());
 
-		int requestId = HackRemotePartitionTimeRecorder.getNextRequestId();
-		HackRemotePartitionTimeRecorder.registerInputChannelInfo(requestId, inputChannel);
 
 		final ChannelFutureListener listener = new ChannelFutureListener() {
-			int localRequestId = requestId;
 			@Override
 			public void operationComplete(ChannelFuture future) throws Exception {
-				HackRemotePartitionTimeRecorder.tickRequestResponseReceived(requestId);
 				if (!future.isSuccess()) {
 					clientHandler.removeInputChannel(inputChannel);
 					SocketAddress remoteAddr = future.channel().remoteAddress();
@@ -134,7 +127,6 @@ public class NettyPartitionRequestClient implements PartitionRequestClient {
 		};
 
 		if (delayMs == 0) {
-			HackRemotePartitionTimeRecorder.tickRemotePartitionRequest(requestId);
 			ChannelFuture f = tcpChannel.writeAndFlush(request);
 			f.addListener(listener);
 		} else {
