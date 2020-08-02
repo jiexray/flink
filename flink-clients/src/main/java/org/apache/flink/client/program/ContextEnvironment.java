@@ -64,10 +64,13 @@ public class ContextEnvironment extends ExecutionEnvironment {
 
 	@Override
 	public JobExecutionResult execute(String jobName) throws Exception {
+		System.out.println("execute() in ContextEnvironment");
 		JobClient jobClient = executeAsync(jobName);
+		System.out.println("ContextEnvironment after call executeAsync()");
 
 		JobExecutionResult jobExecutionResult;
 		if (getConfiguration().getBoolean(DeploymentOptions.ATTACHED)) {
+			System.out.println("Is Attached!");
 			CompletableFuture<JobExecutionResult> jobExecutionResultFuture =
 					jobClient.getJobExecutionResult(getUserCodeClassLoader());
 
@@ -86,7 +89,11 @@ public class ContextEnvironment extends ExecutionEnvironment {
 
 			jobExecutionResult = jobExecutionResultFuture.get();
 			System.out.println(jobExecutionResult);
+			System.out.println("I am setting the lastJobExecutionResult By myself");
+			// Is this right?
+			this.lastJobExecutionResult = jobExecutionResult;
 		} else {
+			System.out.println("Is Detached!");
 			jobExecutionResult = new DetachedJobExecutionResult(jobClient.getJobID());
 		}
 
@@ -100,7 +107,6 @@ public class ContextEnvironment extends ExecutionEnvironment {
 
 		if (!suppressSysout) {
 			System.out.println("Job has been submitted with JobID " + jobClient.getJobID());
-			System.out.println("Is here?");
 		}
 
 		return jobClient;
