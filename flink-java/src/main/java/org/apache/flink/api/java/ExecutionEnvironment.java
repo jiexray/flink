@@ -879,6 +879,7 @@ public class ExecutionEnvironment {
 
 			jobListeners.forEach(
 					jobListener -> jobListener.onJobExecuted(lastJobExecutionResult, null));
+			System.out.println("ExecutionEnvironment.execute() finish all jobListener");
 
 		} catch (Throwable t) {
 			jobListeners.forEach(jobListener -> {
@@ -889,6 +890,8 @@ public class ExecutionEnvironment {
 
 		if (lastJobExecutionResult == null) {
 			System.out.println("After ExecutionEnvironment.execute(), lastJobExecutionResult is null");
+		} else {
+			System.out.println("After ExecutionEnvironment.execute(), lastJobExecutionResult is NOT null");
 		}
 
 		return lastJobExecutionResult;
