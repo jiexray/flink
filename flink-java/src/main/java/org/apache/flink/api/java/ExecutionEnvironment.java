@@ -887,6 +887,10 @@ public class ExecutionEnvironment {
 			ExceptionUtils.rethrowException(t);
 		}
 
+		if (lastJobExecutionResult == null) {
+			System.out.println("After ExecutionEnvironment.execute(), lastJobExecutionResult is null");
+		}
+
 		return lastJobExecutionResult;
 	}
 
