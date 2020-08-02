@@ -868,9 +868,11 @@ public class ExecutionEnvironment {
 	 * @throws Exception Thrown, if the program executions fails.
 	 */
 	public JobExecutionResult execute(String jobName) throws Exception {
+		LOG.error("ExecutionEnvironment.execute() call executeAsync()");
 		final JobClient jobClient = executeAsync(jobName);
 
 		try {
+			LOG.error("ExecutionEnvironment.execute() get lastJobExecutionResult");
 			if (configuration.getBoolean(DeploymentOptions.ATTACHED)) {
 				lastJobExecutionResult = jobClient.getJobExecutionResult(userClassloader).get();
 			} else {
@@ -879,7 +881,7 @@ public class ExecutionEnvironment {
 
 			jobListeners.forEach(
 					jobListener -> jobListener.onJobExecuted(lastJobExecutionResult, null));
-			System.out.println("ExecutionEnvironment.execute() finish all jobListener");
+			LOG.error("ExecutionEnvironment.execute() finish all jobListener");
 
 		} catch (Throwable t) {
 			jobListeners.forEach(jobListener -> {
@@ -889,9 +891,9 @@ public class ExecutionEnvironment {
 		}
 
 		if (lastJobExecutionResult == null) {
-			System.out.println("After ExecutionEnvironment.execute(), lastJobExecutionResult is null");
+			LOG.error("After ExecutionEnvironment.execute(), lastJobExecutionResult is null");
 		} else {
-			System.out.println("After ExecutionEnvironment.execute(), lastJobExecutionResult is NOT null");
+			LOG.error("After ExecutionEnvironment.execute(), lastJobExecutionResult is NOT null");
 		}
 
 		return lastJobExecutionResult;
