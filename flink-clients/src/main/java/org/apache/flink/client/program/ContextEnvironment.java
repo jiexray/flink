@@ -100,6 +100,7 @@ public class ContextEnvironment extends ExecutionEnvironment {
 
 		if (!suppressSysout) {
 			System.out.println("Job has been submitted with JobID " + jobClient.getJobID());
+			System.out.println("Is here?");
 		}
 
 		return jobClient;
