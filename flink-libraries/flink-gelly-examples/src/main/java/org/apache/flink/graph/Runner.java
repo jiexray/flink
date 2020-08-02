@@ -437,6 +437,8 @@ extends ParameterizedBase {
 					result = (DataSet) transform.transformResult(result);
 				}
 			}
+		} else {
+			System.out.println("result is null after run()");
 		}
 
 		return this;
@@ -450,8 +452,10 @@ extends ParameterizedBase {
 	private void execute() throws Exception {
 		if (result == null) {
 			env.execute(executionName);
+			System.out.println("Gelly example run execute()");
 		} else {
 			output.write(executionName.toString(), System.out, result);
+			System.out.println("Gelly example do not run execute(), and call output.write()");
 		}
 
 		System.out.println();
