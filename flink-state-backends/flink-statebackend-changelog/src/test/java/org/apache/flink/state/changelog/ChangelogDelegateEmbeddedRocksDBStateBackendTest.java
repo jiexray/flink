@@ -25,30 +25,59 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.StateBackendOptions;
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackendTest;
+import org.apache.flink.core.fs.Path;
 import org.apache.flink.runtime.execution.Environment;
+import org.apache.flink.runtime.state.CheckpointStorage;
 import org.apache.flink.runtime.state.CheckpointStreamFactory;
 import org.apache.flink.runtime.state.CheckpointableKeyedStateBackend;
-import org.apache.flink.runtime.state.ConfigurableStateBackend;
 import org.apache.flink.runtime.state.KeyGroupRange;
-import org.apache.flink.runtime.state.StateBackend;
 import org.apache.flink.runtime.state.TestTaskStateManager;
+import org.apache.flink.runtime.state.storage.FileSystemCheckpointStorage;
+import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
+import org.apache.flink.util.function.SupplierWithException;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.TestTemplate;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /** Tests for {@link ChangelogStateBackend} delegating {@link EmbeddedRocksDBStateBackend}. */
 public class ChangelogDelegateEmbeddedRocksDBStateBackendTest
         extends EmbeddedRocksDBStateBackendTest {
 
-    @Rule public final TemporaryFolder temp = new TemporaryFolder();
+    @Parameters(name = "statebackend={0}, incrementalCheckpointing={1}")
+    public static List<Object[]> modes() throws IOException {
+        return Arrays.asList(
+                new Object[][] {
+                        {
+                                new ChangelogStateBackend(getStateBackend(true)),
+                                true,
+                                (SupplierWithException<CheckpointStorage, IOException>)
+                                        JobManagerCheckpointStorage::new
+                        },
+                        {
+                                new ChangelogStateBackend(getStateBackend(false)),
+                                false,
+                                (SupplierWithException<CheckpointStorage, IOException>)
+                                        () -> {
+                                            File checkpointPath = new File(tmp.toFile(), "externalCheckpointPath");
+                                            if (!checkpointPath.exists()) {
+                                                checkpointPath.mkdirs();
+                                            }
+                                            return new FileSystemCheckpointStorage(
+                                                    new Path(checkpointPath.toURI()), 0, -1);
+                                        }
+                        }
+                });
+    }
 
     @Override
     protected TestTaskStateManager getTestTaskStateManager() throws IOException {
-        return ChangelogStateBackendTestUtils.createTaskStateManager(temp.newFolder());
+        return ChangelogStateBackendTestUtils.createTaskStateManager(new File(tmp.toFile(), "tmPath"));
     }
 
     @Override
@@ -66,8 +95,8 @@ public class ChangelogDelegateEmbeddedRocksDBStateBackendTest
         return true;
     }
 
-    @Test
-    @Ignore("The type of handle returned from snapshot() is not incremental")
+    @TestTemplate
+    @Disabled("The type of handle returned from snapshot() is not incremental")
     public void testSharedIncrementalStateDeRegistration() {}
 
     @Override
@@ -79,35 +108,28 @@ public class ChangelogDelegateEmbeddedRocksDBStateBackendTest
             throws Exception {
 
         return ChangelogStateBackendTestUtils.createKeyedBackend(
-                new ChangelogStateBackend(super.getStateBackend()),
+                stateBackend,
                 keySerializer,
                 numberOfKeyGroups,
                 keyGroupRange,
                 env);
     }
 
-    @Override
-    protected ConfigurableStateBackend getStateBackend() throws IOException {
-        return new ChangelogStateBackend(super.getStateBackend());
-    }
-
-    @Test
+    @TestTemplate
     public void testMaterializedRestore() throws Exception {
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
         ChangelogStateBackendTestUtils.testMaterializedRestore(
-                getStateBackend(), StateTtlConfig.DISABLED, env, streamFactory);
+                stateBackend, StateTtlConfig.DISABLED, env, streamFactory);
     }
 
-    @Test
+    @TestTemplate
     public void testMaterializedRestoreWithWrappedState() throws Exception {
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
         Configuration configuration = new Configuration();
         configuration.set(StateBackendOptions.LATENCY_TRACK_ENABLED, true);
-        StateBackend stateBackend =
-                getStateBackend()
-                        .configure(configuration, Thread.currentThread().getContextClassLoader());
+        stateBackend.configure(configuration, Thread.currentThread().getContextClassLoader());
         ChangelogStateBackendTestUtils.testMaterializedRestore(
                 stateBackend,
                 StateTtlConfig.newBuilder(Time.minutes(1)).build(),
@@ -115,11 +137,11 @@ public class ChangelogDelegateEmbeddedRocksDBStateBackendTest
                 streamFactory);
     }
 
-    @Test
+    @TestTemplate
     public void testMaterializedRestorePriorityQueue() throws Exception {
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
         ChangelogStateBackendTestUtils.testMaterializedRestoreForPriorityQueue(
-                getStateBackend(), env, streamFactory);
+                stateBackend, env, streamFactory);
     }
 }

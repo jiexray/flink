@@ -19,30 +19,32 @@
 package org.apache.flink.runtime.state;
 
 import org.apache.flink.runtime.state.memory.MemoryStateBackend;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameter;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.TestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
 
 /** Tests for the {@link org.apache.flink.runtime.state.memory.MemoryStateBackend}. */
-@RunWith(Parameterized.class)
 public class MemoryStateBackendTest extends StateBackendTestBase<MemoryStateBackend> {
 
-    @Parameterized.Parameters(name = "useAsyncmode")
-    public static List<Boolean> modes() {
-        return Arrays.asList(true, false);
+    @Parameters(name = "statebackend={0}, useAsyncmode={1}")
+    public static List<Object[]> modes() {
+        return Arrays.asList(
+                new Object[] {
+                        new MemoryStateBackend(true), true
+                },
+                new Object[] {
+                        new MemoryStateBackend(false), false
+                }
+        );
     }
 
-    @Parameterized.Parameter public boolean useAsyncmode;
-
-    @Override
-    protected ConfigurableStateBackend getStateBackend() {
-        return new MemoryStateBackend(useAsyncmode);
-    }
+    @Parameter(1)
+    public boolean useAsyncmode;
 
     @Override
     protected boolean isSerializerPresenceRequiredOnRestore() {
@@ -56,23 +58,23 @@ public class MemoryStateBackendTest extends StateBackendTestBase<MemoryStateBack
 
     // disable these because the verification does not work for this state backend
     @Override
-    @Test
+    @TestTemplate
     public void testValueStateRestoreWithWrongSerializers() {}
 
     @Override
-    @Test
+    @TestTemplate
     public void testListStateRestoreWithWrongSerializers() {}
 
     @Override
-    @Test
+    @TestTemplate
     public void testReducingStateRestoreWithWrongSerializers() {}
 
     @Override
-    @Test
+    @TestTemplate
     public void testMapStateRestoreWithWrongSerializers() {}
 
-    @Ignore
-    @Test
+    @Disabled
+    @TestTemplate
     public void testConcurrentMapIfQueryable() throws Exception {
         super.testConcurrentMapIfQueryable();
     }

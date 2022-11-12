@@ -22,54 +22,42 @@ import org.apache.flink.runtime.state.CheckpointStorage;
 import org.apache.flink.runtime.state.StateBackendMigrationTestBase;
 import org.apache.flink.runtime.state.storage.FileSystemCheckpointStorage;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameter;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 import org.apache.flink.util.function.SupplierWithException;
 
-import org.junit.ClassRule;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
+import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /** Tests for the partitioned state part of {@link EmbeddedRocksDBStateBackend}. */
-@RunWith(Parameterized.class)
 public class EmbeddedRocksDBStateBackendMigrationTest
         extends StateBackendMigrationTestBase<EmbeddedRocksDBStateBackend> {
 
-    @ClassRule public static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
-
-    @Parameterized.Parameters
-    public static List<Object[]> modes() {
-        return Arrays.asList(
-                new Object[][] {
-                    {
-                        true,
-                        (SupplierWithException<CheckpointStorage, IOException>)
-                                JobManagerCheckpointStorage::new
-                    },
-                    {
-                        false,
-                        (SupplierWithException<CheckpointStorage, IOException>)
-                                () -> {
-                                    String checkpointPath =
-                                            TEMP_FOLDER.newFolder().toURI().toString();
-                                    return new FileSystemCheckpointStorage(checkpointPath);
-                                }
-                    }
-                });
-    }
-
-    @Parameterized.Parameter(value = 0)
-    public boolean enableIncrementalCheckpointing;
-
-    @Parameterized.Parameter(value = 1)
+    @Parameter(value = 1)
     public SupplierWithException<CheckpointStorage, IOException> storageSupplier;
 
-    @Override
-    protected EmbeddedRocksDBStateBackend getStateBackend() throws Exception {
-        return new EmbeddedRocksDBStateBackend(enableIncrementalCheckpointing);
+    @Parameters
+    public static List<Object[]> modes() {
+        ArrayList<Object[]> params = new ArrayList<>();
+        params.add(
+                new Object[] {
+                    new EmbeddedRocksDBStateBackend(true),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            JobManagerCheckpointStorage::new
+                });
+        params.add(
+                new Object[] {
+                    new EmbeddedRocksDBStateBackend(false),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            () -> {
+                                String checkpointPath =
+                                        new File(tmp.toFile(), "checkpointPath").toURI().toString();
+                                return new FileSystemCheckpointStorage(checkpointPath);
+                            }
+                });
+        return params;
     }
 
     @Override

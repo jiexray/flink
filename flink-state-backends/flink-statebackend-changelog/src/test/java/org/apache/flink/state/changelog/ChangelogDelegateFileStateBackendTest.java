@@ -27,28 +27,44 @@ import org.apache.flink.runtime.execution.Environment;
 import org.apache.flink.runtime.state.CheckpointStorage;
 import org.apache.flink.runtime.state.CheckpointStreamFactory;
 import org.apache.flink.runtime.state.CheckpointableKeyedStateBackend;
-import org.apache.flink.runtime.state.ConfigurableStateBackend;
 import org.apache.flink.runtime.state.FileStateBackendTest;
 import org.apache.flink.runtime.state.KeyGroupRange;
-import org.apache.flink.runtime.state.StateBackend;
 import org.apache.flink.runtime.state.TestTaskStateManager;
 import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.TestTemplate;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 /** Tests for {@link ChangelogStateBackend} delegating {@link FsStateBackend}. */
 public class ChangelogDelegateFileStateBackendTest extends FileStateBackendTest {
 
-    @Rule public final TemporaryFolder temp = new TemporaryFolder();
+    @TempDir
+    public static java.nio.file.Path tmp;
+
+    @Parameters(name = "statebackend={0}, useAsyncMode={1}")
+    public static Collection<Object[]> modes() {
+        ArrayList<Object[]> params = new ArrayList<>();
+        for (boolean useAsyncMode : Arrays.asList(true, false)) {
+            File checkpointPath = new File(tmp.toFile(), "checkpointPath");
+            params.add(
+                    new Object[] {
+                            new ChangelogStateBackend(new FsStateBackend(checkpointPath.toURI(), useAsyncMode)), useAsyncMode
+                    });
+        }
+        return params;
+    }
 
     @Override
     protected TestTaskStateManager getTestTaskStateManager() throws IOException {
-        return ChangelogStateBackendTestUtils.createTaskStateManager(temp.newFolder());
+        return ChangelogStateBackendTestUtils.createTaskStateManager(new File(tmp.toFile(), "tmpPath"));
     }
 
     @Override
@@ -70,7 +86,7 @@ public class ChangelogDelegateFileStateBackendTest extends FileStateBackendTest 
             throws Exception {
 
         return ChangelogStateBackendTestUtils.createKeyedBackend(
-                new ChangelogStateBackend(super.getStateBackend()),
+                stateBackend,
                 keySerializer,
                 numberOfKeyGroups,
                 keyGroupRange,
@@ -78,32 +94,25 @@ public class ChangelogDelegateFileStateBackendTest extends FileStateBackendTest 
     }
 
     @Override
-    protected ConfigurableStateBackend getStateBackend() throws Exception {
-        return new ChangelogStateBackend(super.getStateBackend());
-    }
-
-    @Override
     protected CheckpointStorage getCheckpointStorage() {
         return new JobManagerCheckpointStorage();
     }
 
-    @Test
+    @TestTemplate
     public void testMaterializedRestore() throws Exception {
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
         ChangelogStateBackendTestUtils.testMaterializedRestore(
-                getStateBackend(), StateTtlConfig.DISABLED, env, streamFactory);
+                stateBackend, StateTtlConfig.DISABLED, env, streamFactory);
     }
 
-    @Test
+    @TestTemplate
     public void testMaterializedRestoreWithWrappedState() throws Exception {
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
         Configuration configuration = new Configuration();
         configuration.set(StateBackendOptions.LATENCY_TRACK_ENABLED, true);
-        StateBackend stateBackend =
-                getStateBackend()
-                        .configure(configuration, Thread.currentThread().getContextClassLoader());
+        stateBackend.configure(configuration, Thread.currentThread().getContextClassLoader());
         ChangelogStateBackendTestUtils.testMaterializedRestore(
                 stateBackend,
                 StateTtlConfig.newBuilder(Time.minutes(1)).build(),
@@ -111,11 +120,11 @@ public class ChangelogDelegateFileStateBackendTest extends FileStateBackendTest 
                 streamFactory);
     }
 
-    @Test
+    @TestTemplate
     public void testMaterializedRestorePriorityQueue() throws Exception {
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
         ChangelogStateBackendTestUtils.testMaterializedRestoreForPriorityQueue(
-                getStateBackend(), env, streamFactory);
+                stateBackend, env, streamFactory);
     }
 }

@@ -21,43 +21,42 @@ package org.apache.flink.contrib.streaming.state;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.StateBackendMigrationTestBase;
 import org.apache.flink.runtime.state.filesystem.FsStateBackend;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.io.IOException;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 /** Tests for the partitioned state part of {@link RocksDBStateBackend}. */
-@RunWith(Parameterized.class)
 public class RocksDBStateBackendMigrationTest
         extends StateBackendMigrationTestBase<RocksDBStateBackend> {
-
-    @Parameterized.Parameters(name = "Incremental checkpointing: {0}")
-    public static Collection<Boolean> parameters() {
-        return Arrays.asList(false, true);
-    }
-
-    @Parameterized.Parameter public boolean enableIncrementalCheckpointing;
-
     // Store it because we need it for the cleanup test.
-    private String dbPath;
+    public static String dbPath;
 
-    @Override
-    protected RocksDBStateBackend getStateBackend() throws IOException {
-        dbPath = tempFolder.newFolder().getAbsolutePath();
-        String checkpointPath = tempFolder.newFolder().toURI().toString();
-        RocksDBStateBackend backend =
-                new RocksDBStateBackend(
-                        new FsStateBackend(checkpointPath), enableIncrementalCheckpointing);
+    @Parameters
+    public static List<Object[]> modes() {
+        ArrayList<Object[]> params = new ArrayList<>();
+        dbPath = new File(tmp.toFile(), "dbPath").getAbsolutePath();
+        String checkpointPath = new File(tmp.toFile(), "checkpointPath").toURI().toString();
 
-        Configuration configuration = new Configuration();
-        configuration.set(
-                RocksDBOptions.TIMER_SERVICE_FACTORY,
-                EmbeddedRocksDBStateBackend.PriorityQueueStateType.ROCKSDB);
-        backend = backend.configure(configuration, Thread.currentThread().getContextClassLoader());
-        backend.setDbStoragePath(dbPath);
-        return backend;
+        for (boolean enableIncrementalCheckpointing : Arrays.asList(true, false)) {
+            RocksDBStateBackend backend =
+                    new RocksDBStateBackend(
+                            new FsStateBackend(checkpointPath), enableIncrementalCheckpointing);
+
+            Configuration configuration = new Configuration();
+            configuration.set(
+                    RocksDBOptions.TIMER_SERVICE_FACTORY,
+                    EmbeddedRocksDBStateBackend.PriorityQueueStateType.ROCKSDB);
+            backend =
+                    backend.configure(
+                            configuration, Thread.currentThread().getContextClassLoader());
+            backend.setDbStoragePath(dbPath);
+
+            params.add(new Object[] {backend});
+        }
+
+        return params;
     }
 }

@@ -47,18 +47,17 @@ import org.apache.flink.runtime.state.storage.FileSystemCheckpointStorage;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
 import org.apache.flink.runtime.util.BlockerCheckpointStreamFactory;
 import org.apache.flink.runtime.util.BlockingCheckpointOutputStream;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameter;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 import org.apache.flink.util.FlinkRuntimeException;
 import org.apache.flink.util.IOUtils;
 import org.apache.flink.util.function.SupplierWithException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.junit.After;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.TestTemplate;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -85,11 +84,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.RunnableFuture;
 
-import static junit.framework.TestCase.assertNotNull;
 import static org.apache.flink.contrib.streaming.state.RocksDBKeyedStateBackendBuilder.DB_INSTANCE_DIR_STRING;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
@@ -98,7 +96,6 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static org.powermock.api.mockito.PowerMockito.spy;
 
 /** Tests for the partitioned state part of {@link EmbeddedRocksDBStateBackend}. */
-@RunWith(Parameterized.class)
 public class EmbeddedRocksDBStateBackendTest
         extends StateBackendTestBase<EmbeddedRocksDBStateBackend> {
 
@@ -110,51 +107,59 @@ public class EmbeddedRocksDBStateBackendTest
     private ValueState<Integer> testState1;
     private ValueState<String> testState2;
 
-    @ClassRule public static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
+    @TempDir
+    public static java.nio.file.Path tmp;
 
-    @Parameterized.Parameters
-    public static List<Object[]> modes() {
+    @Parameters(name = "statebackend={0}, incrementalCheckpointing={1}")
+    public static List<Object[]> modes() throws IOException {
         return Arrays.asList(
                 new Object[][] {
                     {
+                        getStateBackend(true),
                         true,
                         (SupplierWithException<CheckpointStorage, IOException>)
                                 JobManagerCheckpointStorage::new
                     },
                     {
+                        getStateBackend(false),
                         false,
                         (SupplierWithException<CheckpointStorage, IOException>)
                                 () -> {
-                                    String checkpointPath =
-                                            TEMP_FOLDER.newFolder().toURI().toString();
+                                    File checkpointPath = new File(tmp.toFile(), "externalCheckpointPath");
+                                    if (!checkpointPath.exists()) {
+                                        checkpointPath.mkdirs();
+                                    }
                                     return new FileSystemCheckpointStorage(
-                                            new Path(checkpointPath), 0, -1);
+                                            new Path(checkpointPath.toURI()), 0, -1);
                                 }
                     }
                 });
     }
 
-    @Parameterized.Parameter(value = 0)
+    @Parameter(value = 1)
     public boolean enableIncrementalCheckpointing;
 
-    @Parameterized.Parameter(value = 1)
+    @Parameter(value = 2)
     public SupplierWithException<CheckpointStorage, IOException> storageSupplier;
 
     // Store it because we need it for the cleanup test.
-    private String dbPath;
-    private RocksDB db = null;
-    private ColumnFamilyHandle defaultCFHandle = null;
+    private static String dbPath;
+    private static RocksDB db = null;
+    private static ColumnFamilyHandle defaultCFHandle = null;
     private RocksDBStateUploader rocksDBStateUploader = null;
     private final RocksDBResourceContainer optionsContainer = new RocksDBResourceContainer();
 
     public void prepareRocksDB() throws Exception {
-        String dbPath = new File(TEMP_FOLDER.newFolder(), DB_INSTANCE_DIR_STRING).getAbsolutePath();
+        File dbPath = new File(new File(tmp.toFile(), "dbPath"), DB_INSTANCE_DIR_STRING);
+        if (!dbPath.exists()) {
+            dbPath.mkdirs();
+        }
         ColumnFamilyOptions columnOptions = optionsContainer.getColumnOptions();
 
         ArrayList<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>(1);
         db =
                 RocksDBOperationUtils.openDB(
-                        dbPath,
+                        dbPath.getAbsolutePath(),
                         Collections.emptyList(),
                         columnFamilyHandles,
                         columnOptions,
@@ -162,9 +167,11 @@ public class EmbeddedRocksDBStateBackendTest
         defaultCFHandle = columnFamilyHandles.remove(0);
     }
 
-    @Override
-    protected ConfigurableStateBackend getStateBackend() throws IOException {
-        dbPath = TEMP_FOLDER.newFolder().getAbsolutePath();
+    /**
+     * State backend is initialized in the parameter injector. Do not initialize it elsewhere.
+     */
+    public static ConfigurableStateBackend getStateBackend(boolean enableIncrementalCheckpointing) throws IOException {
+        dbPath = new File(tmp.toFile(), "dbPath").getAbsolutePath();
         EmbeddedRocksDBStateBackend backend =
                 new EmbeddedRocksDBStateBackend(enableIncrementalCheckpointing);
         Configuration configuration = new Configuration();
@@ -197,7 +204,7 @@ public class EmbeddedRocksDBStateBackendTest
     }
 
     // small safety net for instance cleanups, so that no native objects are left
-    @After
+    @AfterEach
     public void cleanupRocksDB() {
         if (keyedStateBackend != null) {
             IOUtils.closeQuietly(keyedStateBackend);
@@ -227,8 +234,7 @@ public class EmbeddedRocksDBStateBackendTest
 
         RocksDBKeyedStateBackendBuilder keyedStateBackendBuilder =
                 RocksDBTestUtils.builderForTestDB(
-                                TEMP_FOLDER
-                                        .newFolder(), // this is not used anyways because the DB is
+                                new File(tmp.toFile(), "dbPath"), // this is not used anyways because the DB is
                                 // injected
                                 IntSerializer.INSTANCE,
                                 spy(db),
@@ -312,7 +318,7 @@ public class EmbeddedRocksDBStateBackendTest
         }
     }
 
-    @Test
+    @TestTemplate
     public void testCorrectMergeOperatorSet() throws Exception {
         prepareRocksDB();
         final ColumnFamilyOptions columnFamilyOptions = spy(new ColumnFamilyOptions());
@@ -321,7 +327,7 @@ public class EmbeddedRocksDBStateBackendTest
         try {
             test =
                     RocksDBTestUtils.builderForTestDB(
-                                    TEMP_FOLDER.newFolder(),
+                                    new File(tmp.toFile(), "dbPath"),
                                     IntSerializer.INSTANCE,
                                     db,
                                     defaultCFHandle,
@@ -348,7 +354,7 @@ public class EmbeddedRocksDBStateBackendTest
         }
     }
 
-    @Test
+    @TestTemplate
     public void testReleasingSnapshotAfterBackendClosed() throws Exception {
         setupRocksKeyedStateBackend();
 
@@ -372,7 +378,7 @@ public class EmbeddedRocksDBStateBackendTest
             this.keyedStateBackend.dispose();
 
             verify(spyDB, times(1)).close();
-            assertEquals(true, keyedStateBackend.isDisposed());
+            assertThat(keyedStateBackend.isDisposed()).isTrue();
 
             // Ensure every RocksObjects was closed exactly once
             for (RocksObject rocksCloseable : allCreatedCloseables) {
@@ -386,7 +392,7 @@ public class EmbeddedRocksDBStateBackendTest
         verifyRocksDBStateUploaderClosed();
     }
 
-    @Test
+    @TestTemplate
     public void testDismissingSnapshot() throws Exception {
         setupRocksKeyedStateBackend();
         try {
@@ -405,7 +411,7 @@ public class EmbeddedRocksDBStateBackendTest
         verifyRocksDBStateUploaderClosed();
     }
 
-    @Test
+    @TestTemplate
     public void testDismissingSnapshotNotRunnable() throws Exception {
         setupRocksKeyedStateBackend();
         try {
@@ -433,7 +439,7 @@ public class EmbeddedRocksDBStateBackendTest
         verifyRocksDBStateUploaderClosed();
     }
 
-    @Test
+    @TestTemplate
     public void testCompletingSnapshot() throws Exception {
         setupRocksKeyedStateBackend();
         try {
@@ -453,12 +459,12 @@ public class EmbeddedRocksDBStateBackendTest
 
             SnapshotResult<KeyedStateHandle> snapshotResult = snapshot.get();
             KeyedStateHandle keyedStateHandle = snapshotResult.getJobManagerOwnedSnapshot();
-            assertNotNull(keyedStateHandle);
-            assertTrue(keyedStateHandle.getStateSize() > 0);
-            assertEquals(2, keyedStateHandle.getKeyGroupRange().getNumberOfKeyGroups());
+            assertThat(keyedStateHandle).isNotNull();
+            assertThat(keyedStateHandle.getStateSize() > 0).isTrue();
+            assertThat( keyedStateHandle.getKeyGroupRange().getNumberOfKeyGroups()).isEqualTo(2);
 
             for (BlockingCheckpointOutputStream stream : testStreamFactory.getAllCreatedStreams()) {
-                assertTrue(stream.isClosed());
+                assertThat(stream.isClosed()).isTrue();
             }
 
             asyncSnapshotThread.join();
@@ -470,7 +476,7 @@ public class EmbeddedRocksDBStateBackendTest
         verifyRocksDBStateUploaderClosed();
     }
 
-    @Test
+    @TestTemplate
     public void testCancelRunningSnapshot() throws Exception {
         setupRocksKeyedStateBackend();
         try {
@@ -489,7 +495,7 @@ public class EmbeddedRocksDBStateBackendTest
             blocker.trigger(); // allow checkpointing to start writing
 
             for (BlockingCheckpointOutputStream stream : testStreamFactory.getAllCreatedStreams()) {
-                assertTrue(stream.isClosed());
+                assertThat(stream.isClosed()).isTrue();
             }
 
             waiter.await(); // wait for snapshot stream writing to run
@@ -508,7 +514,7 @@ public class EmbeddedRocksDBStateBackendTest
         verifyRocksDBStateUploaderClosed();
     }
 
-    @Test
+    @TestTemplate
     public void testDisposeDeletesAllDirectories() throws Exception {
         CheckpointableKeyedStateBackend<Integer> backend =
                 createKeyedBackend(IntSerializer.INSTANCE);
@@ -529,7 +535,7 @@ public class EmbeddedRocksDBStateBackendTest
             state.update("Hello");
 
             // more than just the root directory
-            assertTrue(allFilesInDbDir.size() > 1);
+            assertThat(allFilesInDbDir.size() > 1).isTrue();
         } finally {
             IOUtils.closeQuietly(backend);
             backend.dispose();
@@ -539,10 +545,10 @@ public class EmbeddedRocksDBStateBackendTest
                         new File(dbPath), new AcceptAllFilter(), new AcceptAllFilter());
 
         // just the root directory left
-        assertEquals(1, allFilesInDbDir.size());
+        assertThat(allFilesInDbDir.size()).isEqualTo(1);
     }
 
-    @Test
+    @TestTemplate
     public void testSharedIncrementalStateDeRegistration() throws Exception {
         if (enableIncrementalCheckpointing) {
             CheckpointableKeyedStateBackend<Integer> backend =
@@ -618,7 +624,7 @@ public class EmbeddedRocksDBStateBackendTest
         }
     }
 
-    @Test(expected = FlinkRuntimeException.class)
+    @TestTemplate
     public void testMapStateClear() throws Exception {
         setupRocksKeyedStateBackend();
         MapStateDescriptor<Integer, String> kvId =
@@ -634,7 +640,7 @@ public class EmbeddedRocksDBStateBackendTest
                 .when(keyedStateBackend.db)
                 .newIterator(any(ColumnFamilyHandle.class), any(ReadOptions.class));
 
-        state.clear();
+        assertThatThrownBy(state::clear).isInstanceOf(FlinkRuntimeException.class);
     }
 
     private void runStateUpdates() throws Exception {
@@ -654,12 +660,12 @@ public class EmbeddedRocksDBStateBackendTest
             verify(rocksCloseable, times(1)).close();
         }
 
-        assertNotNull(null, keyedStateBackend.db);
+        assertThat(keyedStateBackend.db).isNotNull();
         RocksDB spyDB = keyedStateBackend.db;
 
         keyedStateBackend.dispose();
         verify(spyDB, times(1)).close();
-        assertEquals(true, keyedStateBackend.isDisposed());
+        assertThat(keyedStateBackend.isDisposed()).isTrue();
     }
 
     private void verifyRocksDBStateUploaderClosed() {

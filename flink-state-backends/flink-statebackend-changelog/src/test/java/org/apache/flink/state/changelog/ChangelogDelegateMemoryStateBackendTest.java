@@ -35,16 +35,32 @@ import org.apache.flink.runtime.state.TestTaskStateManager;
 import org.apache.flink.runtime.state.memory.MemoryStateBackend;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
 
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /** Tests for {@link ChangelogStateBackend} delegating {@link MemoryStateBackend}. */
 public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendTest {
 
     @Rule public final TemporaryFolder temp = new TemporaryFolder();
+
+    @Parameters(name = "statebackend={0}, useAsyncmode={1}")
+    public static List<Object[]> modes() {
+        return Arrays.asList(
+                new Object[] {
+                        new ChangelogStateBackend(new MemoryStateBackend(true)), true
+                },
+                new Object[] {
+                        new ChangelogStateBackend(new MemoryStateBackend(false)), false
+                }
+        );
+    }
 
     @Override
     protected TestTaskStateManager getTestTaskStateManager() throws IOException {
@@ -70,16 +86,11 @@ public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendT
             throws Exception {
 
         return ChangelogStateBackendTestUtils.createKeyedBackend(
-                new ChangelogStateBackend(super.getStateBackend()),
+                stateBackend,
                 keySerializer,
                 numberOfKeyGroups,
                 keyGroupRange,
                 env);
-    }
-
-    @Override
-    protected ConfigurableStateBackend getStateBackend() {
-        return new ChangelogStateBackend(super.getStateBackend());
     }
 
     @Override
@@ -92,7 +103,7 @@ public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendT
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
         ChangelogStateBackendTestUtils.testMaterializedRestore(
-                getStateBackend(), StateTtlConfig.DISABLED, env, streamFactory);
+                stateBackend, StateTtlConfig.DISABLED, env, streamFactory);
     }
 
     @Test
@@ -101,9 +112,7 @@ public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendT
 
         Configuration configuration = new Configuration();
         configuration.set(StateBackendOptions.LATENCY_TRACK_ENABLED, true);
-        StateBackend stateBackend =
-                getStateBackend()
-                        .configure(configuration, Thread.currentThread().getContextClassLoader());
+        stateBackend.configure(configuration, Thread.currentThread().getContextClassLoader());
         ChangelogStateBackendTestUtils.testMaterializedRestore(
                 stateBackend,
                 StateTtlConfig.newBuilder(Time.minutes(1)).build(),
@@ -116,6 +125,6 @@ public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendT
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
         ChangelogStateBackendTestUtils.testMaterializedRestoreForPriorityQueue(
-                getStateBackend(), env, streamFactory);
+                stateBackend, env, streamFactory);
     }
 }

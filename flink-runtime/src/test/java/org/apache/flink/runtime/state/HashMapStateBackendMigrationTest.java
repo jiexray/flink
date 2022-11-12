@@ -21,41 +21,42 @@ package org.apache.flink.runtime.state;
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
 import org.apache.flink.runtime.state.storage.FileSystemCheckpointStorage;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameter;
+import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 import org.apache.flink.util.function.SupplierWithException;
 
-import org.junit.ClassRule;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Tests for the partitioned state part of {@link HashMapStateBackend}. */
-@RunWith(Parameterized.class)
 public class HashMapStateBackendMigrationTest
         extends StateBackendMigrationTestBase<HashMapStateBackend> {
 
-    @ClassRule public static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
-
-    @Parameterized.Parameters
-    public static Object[] modes() {
-        return new Object[] {
-            (SupplierWithException<CheckpointStorage, IOException>)
-                    JobManagerCheckpointStorage::new,
-            (SupplierWithException<CheckpointStorage, IOException>)
-                    () -> {
-                        String checkpointPath = TEMP_FOLDER.newFolder().toURI().toString();
-                        return new FileSystemCheckpointStorage(checkpointPath);
-                    }
-        };
-    }
-
-    @Parameterized.Parameter
+    @Parameter(value = 1)
     public SupplierWithException<CheckpointStorage, IOException> storageSupplier;
 
-    @Override
-    protected HashMapStateBackend getStateBackend() throws Exception {
-        return new HashMapStateBackend();
+    @Parameters
+    public static List<Object[]> modes() throws Exception {
+        ArrayList<Object[]> params = new ArrayList<>();
+        params.add(
+                new Object[] {
+                    new HashMapStateBackend(),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            JobManagerCheckpointStorage::new
+                });
+        params.add(
+                new Object[] {
+                    new HashMapStateBackend(),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            () -> {
+                                String checkpointPath =
+                                        new File(tmp.toFile(), "checkpointPath").toURI().toString();
+                                return new FileSystemCheckpointStorage(checkpointPath);
+                            }
+                });
+        return params;
     }
 
     @Override
