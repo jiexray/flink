@@ -23,6 +23,8 @@ import org.apache.flink.runtime.state.StateBackendMigrationTestBase;
 import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 
+import org.junit.jupiter.api.io.TempDir;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,11 +36,15 @@ public class RocksDBStateBackendMigrationTest
     // Store it because we need it for the cleanup test.
     public static String dbPath;
 
-    @Parameters
+    @TempDir public static File tmpDbPath;
+
+    @TempDir public static File tmpCheckpointPath;
+
+    @Parameters(name = "statebackend={0}")
     public static List<Object[]> modes() {
         ArrayList<Object[]> params = new ArrayList<>();
-        dbPath = new File(tmp.toFile(), "dbPath").getAbsolutePath();
-        String checkpointPath = new File(tmp.toFile(), "checkpointPath").toURI().toString();
+        dbPath = tmpDbPath.getAbsolutePath();
+        String checkpointPath = tmpCheckpointPath.toURI().toString();
 
         for (boolean enableIncrementalCheckpointing : Arrays.asList(true, false)) {
             RocksDBStateBackend backend =

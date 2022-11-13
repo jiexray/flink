@@ -33,7 +33,7 @@ import java.util.Collection;
 public class ChangelogStateBackendMigrationTest
         extends StateBackendMigrationTestBase<ChangelogStateBackend> {
 
-    @Parameters
+    @Parameters(name = "statebackend={0}")
     public static Collection<AbstractStateBackend> getStateBackend() throws Exception {
         return Arrays.asList(
                 new HashMapStateBackend(),

@@ -34,13 +34,8 @@ public class MemoryStateBackendTest extends StateBackendTestBase<MemoryStateBack
     @Parameters(name = "statebackend={0}, useAsyncmode={1}")
     public static List<Object[]> modes() {
         return Arrays.asList(
-                new Object[] {
-                        new MemoryStateBackend(true), true
-                },
-                new Object[] {
-                        new MemoryStateBackend(false), false
-                }
-        );
+                new Object[] {new MemoryStateBackend(true), true},
+                new Object[] {new MemoryStateBackend(false), false});
     }
 
     @Parameter(1)

@@ -20,7 +20,6 @@ package org.apache.flink.runtime.state;
 import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -30,9 +29,8 @@ import java.util.Collection;
  */
 public class FileStateBackendMigrationTest extends StateBackendMigrationTestBase<FsStateBackend> {
 
-    @Parameters
+    @Parameters(name = "statebackend={0}")
     public static Collection<AbstractStateBackend> getStateBackend() throws Exception {
-        File checkpointPath = new File(tmp.toFile(), "checkpointPath");
-        return Arrays.asList(new FsStateBackend(checkpointPath.toURI(), false));
+        return Arrays.asList(new FsStateBackend(tempFolder.toURI(), false));
     }
 }

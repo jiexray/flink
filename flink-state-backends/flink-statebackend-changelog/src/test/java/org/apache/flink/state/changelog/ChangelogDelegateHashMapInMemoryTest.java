@@ -23,18 +23,12 @@ import org.apache.flink.runtime.state.CheckpointStorage;
 import org.apache.flink.runtime.state.HashMapStateBackendTest;
 import org.apache.flink.runtime.state.TestTaskStateManager;
 import org.apache.flink.runtime.state.changelog.inmemory.InMemoryStateChangelogStorage;
-
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
 import org.apache.flink.runtime.state.storage.FileSystemCheckpointStorage;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
 import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 import org.apache.flink.util.function.SupplierWithException;
 
-import org.junit.Rule;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,28 +39,26 @@ import java.util.List;
  */
 public class ChangelogDelegateHashMapInMemoryTest extends ChangelogDelegateHashMapTest {
 
-    @TempDir
-    public static java.nio.file.Path tmp;
-
     @Parameters(name = "statebackend={0}")
     public static List<Object[]> modes() {
         ArrayList<Object[]> params = new ArrayList<>();
 
-        params.add(new Object[] {
-                new ChangelogStateBackend(new HashMapStateBackend()),
-                (SupplierWithException<CheckpointStorage, IOException>)
-                        JobManagerCheckpointStorage::new
-        });
-        params.add(new Object[] {
-                new ChangelogStateBackend(new HashMapStateBackend()),
-                (SupplierWithException<CheckpointStorage, IOException>)
-                        () -> {
-                            String checkpointPath =
-                                    new File(tmp.toFile(), "checkpointPath").toURI().toString();
-                            return new FileSystemCheckpointStorage(
-                                    new Path(checkpointPath), 0, -1);
-                        }
-        });
+        params.add(
+                new Object[] {
+                    new ChangelogStateBackend(new HashMapStateBackend()),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            JobManagerCheckpointStorage::new
+                });
+        params.add(
+                new Object[] {
+                    new ChangelogStateBackend(new HashMapStateBackend()),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            () -> {
+                                String checkpointPath = tmpCheckpointPath.toURI().toString();
+                                return new FileSystemCheckpointStorage(
+                                        new Path(checkpointPath), 0, -1);
+                            }
+                });
         return params;
     }
 

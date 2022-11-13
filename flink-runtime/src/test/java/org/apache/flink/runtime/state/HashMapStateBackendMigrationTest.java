@@ -25,6 +25,8 @@ import org.apache.flink.testutils.junit.extensions.parameterized.Parameter;
 import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 import org.apache.flink.util.function.SupplierWithException;
 
+import org.junit.jupiter.api.io.TempDir;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ import java.util.List;
 /** Tests for the partitioned state part of {@link HashMapStateBackend}. */
 public class HashMapStateBackendMigrationTest
         extends StateBackendMigrationTestBase<HashMapStateBackend> {
+
+    @TempDir public static File tmpCheckpointPath;
 
     @Parameter(value = 1)
     public SupplierWithException<CheckpointStorage, IOException> storageSupplier;
@@ -51,8 +55,7 @@ public class HashMapStateBackendMigrationTest
                     new HashMapStateBackend(),
                     (SupplierWithException<CheckpointStorage, IOException>)
                             () -> {
-                                String checkpointPath =
-                                        new File(tmp.toFile(), "checkpointPath").toURI().toString();
+                                String checkpointPath = tmpCheckpointPath.toURI().toString();
                                 return new FileSystemCheckpointStorage(checkpointPath);
                             }
                 });

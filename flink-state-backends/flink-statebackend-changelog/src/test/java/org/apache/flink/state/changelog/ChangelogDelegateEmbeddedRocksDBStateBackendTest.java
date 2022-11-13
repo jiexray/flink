@@ -39,6 +39,7 @@ import org.apache.flink.util.function.SupplierWithException;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestTemplate;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,35 +50,34 @@ import java.util.List;
 public class ChangelogDelegateEmbeddedRocksDBStateBackendTest
         extends EmbeddedRocksDBStateBackendTest {
 
+    @TempDir public static File tmPath;
+
     @Parameters(name = "statebackend={0}, incrementalCheckpointing={1}")
     public static List<Object[]> modes() throws IOException {
         return Arrays.asList(
                 new Object[][] {
-                        {
-                                new ChangelogStateBackend(getStateBackend(true)),
-                                true,
-                                (SupplierWithException<CheckpointStorage, IOException>)
-                                        JobManagerCheckpointStorage::new
-                        },
-                        {
-                                new ChangelogStateBackend(getStateBackend(false)),
-                                false,
-                                (SupplierWithException<CheckpointStorage, IOException>)
-                                        () -> {
-                                            File checkpointPath = new File(tmp.toFile(), "externalCheckpointPath");
-                                            if (!checkpointPath.exists()) {
-                                                checkpointPath.mkdirs();
-                                            }
-                                            return new FileSystemCheckpointStorage(
-                                                    new Path(checkpointPath.toURI()), 0, -1);
-                                        }
-                        }
+                    {
+                        new ChangelogStateBackend(getStateBackend(true)),
+                        true,
+                        (SupplierWithException<CheckpointStorage, IOException>)
+                                JobManagerCheckpointStorage::new
+                    },
+                    {
+                        new ChangelogStateBackend(getStateBackend(false)),
+                        false,
+                        (SupplierWithException<CheckpointStorage, IOException>)
+                                () -> {
+                                    String checkpointPath = tmpCheckpointPath.toURI().toString();
+                                    return new FileSystemCheckpointStorage(
+                                            new Path(checkpointPath), 0, -1);
+                                }
+                    }
                 });
     }
 
     @Override
     protected TestTaskStateManager getTestTaskStateManager() throws IOException {
-        return ChangelogStateBackendTestUtils.createTaskStateManager(new File(tmp.toFile(), "tmPath"));
+        return ChangelogStateBackendTestUtils.createTaskStateManager(tmPath);
     }
 
     @Override
@@ -108,11 +108,7 @@ public class ChangelogDelegateEmbeddedRocksDBStateBackendTest
             throws Exception {
 
         return ChangelogStateBackendTestUtils.createKeyedBackend(
-                stateBackend,
-                keySerializer,
-                numberOfKeyGroups,
-                keyGroupRange,
-                env);
+                stateBackend, keySerializer, numberOfKeyGroups, keyGroupRange, env);
     }
 
     @TestTemplate

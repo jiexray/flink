@@ -41,7 +41,6 @@ public class FileStateBackendTest extends StateBackendTestBase<FsStateBackend> {
     public static Collection<Object[]> modes() {
         ArrayList<Object[]> params = new ArrayList<>();
         for (boolean useAsyncMode : Arrays.asList(true, false)) {
-            File checkpointPath = new File(tmp.toFile(), "checkpointPath");
             params.add(
                     new Object[] {
                         new FsStateBackend(checkpointPath.toURI(), useAsyncMode), useAsyncMode
@@ -53,7 +52,7 @@ public class FileStateBackendTest extends StateBackendTestBase<FsStateBackend> {
     @Parameter(1)
     public boolean useAsyncMode;
 
-    @TempDir public static java.nio.file.Path tmp;
+    @TempDir public static File checkpointPath;
 
     @Override
     protected boolean isSerializerPresenceRequiredOnRestore() {

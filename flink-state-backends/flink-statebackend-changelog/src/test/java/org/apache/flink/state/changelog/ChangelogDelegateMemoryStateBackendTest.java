@@ -27,20 +27,17 @@ import org.apache.flink.runtime.execution.Environment;
 import org.apache.flink.runtime.state.CheckpointStorage;
 import org.apache.flink.runtime.state.CheckpointStreamFactory;
 import org.apache.flink.runtime.state.CheckpointableKeyedStateBackend;
-import org.apache.flink.runtime.state.ConfigurableStateBackend;
 import org.apache.flink.runtime.state.KeyGroupRange;
 import org.apache.flink.runtime.state.MemoryStateBackendTest;
-import org.apache.flink.runtime.state.StateBackend;
 import org.apache.flink.runtime.state.TestTaskStateManager;
 import org.apache.flink.runtime.state.memory.MemoryStateBackend;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
-
 import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.TestTemplate;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -48,23 +45,18 @@ import java.util.List;
 /** Tests for {@link ChangelogStateBackend} delegating {@link MemoryStateBackend}. */
 public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendTest {
 
-    @Rule public final TemporaryFolder temp = new TemporaryFolder();
+    @TempDir public static File temp;
 
     @Parameters(name = "statebackend={0}, useAsyncmode={1}")
     public static List<Object[]> modes() {
         return Arrays.asList(
-                new Object[] {
-                        new ChangelogStateBackend(new MemoryStateBackend(true)), true
-                },
-                new Object[] {
-                        new ChangelogStateBackend(new MemoryStateBackend(false)), false
-                }
-        );
+                new Object[] {new ChangelogStateBackend(new MemoryStateBackend(true)), true},
+                new Object[] {new ChangelogStateBackend(new MemoryStateBackend(false)), false});
     }
 
     @Override
     protected TestTaskStateManager getTestTaskStateManager() throws IOException {
-        return ChangelogStateBackendTestUtils.createTaskStateManager(temp.newFolder());
+        return ChangelogStateBackendTestUtils.createTaskStateManager(temp);
     }
 
     @Override
@@ -86,11 +78,7 @@ public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendT
             throws Exception {
 
         return ChangelogStateBackendTestUtils.createKeyedBackend(
-                stateBackend,
-                keySerializer,
-                numberOfKeyGroups,
-                keyGroupRange,
-                env);
+                stateBackend, keySerializer, numberOfKeyGroups, keyGroupRange, env);
     }
 
     @Override
@@ -98,7 +86,7 @@ public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendT
         return new JobManagerCheckpointStorage();
     }
 
-    @Test
+    @TestTemplate
     public void testMaterializedRestore() throws Exception {
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
@@ -106,7 +94,7 @@ public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendT
                 stateBackend, StateTtlConfig.DISABLED, env, streamFactory);
     }
 
-    @Test
+    @TestTemplate
     public void testMaterializedRestoreWithWrappedState() throws Exception {
         CheckpointStreamFactory streamFactory = createStreamFactory();
 
@@ -120,7 +108,7 @@ public class ChangelogDelegateMemoryStateBackendTest extends MemoryStateBackendT
                 streamFactory);
     }
 
-    @Test
+    @TestTemplate
     public void testMaterializedRestorePriorityQueue() throws Exception {
         CheckpointStreamFactory streamFactory = createStreamFactory();
 

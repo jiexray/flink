@@ -46,17 +46,17 @@ import java.util.Collection;
 /** Tests for {@link ChangelogStateBackend} delegating {@link FsStateBackend}. */
 public class ChangelogDelegateFileStateBackendTest extends FileStateBackendTest {
 
-    @TempDir
-    public static java.nio.file.Path tmp;
+    @TempDir public static File tmPath;
 
     @Parameters(name = "statebackend={0}, useAsyncMode={1}")
     public static Collection<Object[]> modes() {
         ArrayList<Object[]> params = new ArrayList<>();
         for (boolean useAsyncMode : Arrays.asList(true, false)) {
-            File checkpointPath = new File(tmp.toFile(), "checkpointPath");
             params.add(
                     new Object[] {
-                            new ChangelogStateBackend(new FsStateBackend(checkpointPath.toURI(), useAsyncMode)), useAsyncMode
+                        new ChangelogStateBackend(
+                                new FsStateBackend(checkpointPath.toURI(), useAsyncMode)),
+                        useAsyncMode
                     });
         }
         return params;
@@ -64,7 +64,7 @@ public class ChangelogDelegateFileStateBackendTest extends FileStateBackendTest 
 
     @Override
     protected TestTaskStateManager getTestTaskStateManager() throws IOException {
-        return ChangelogStateBackendTestUtils.createTaskStateManager(new File(tmp.toFile(), "tmpPath"));
+        return ChangelogStateBackendTestUtils.createTaskStateManager(tmPath);
     }
 
     @Override
@@ -86,11 +86,7 @@ public class ChangelogDelegateFileStateBackendTest extends FileStateBackendTest 
             throws Exception {
 
         return ChangelogStateBackendTestUtils.createKeyedBackend(
-                stateBackend,
-                keySerializer,
-                numberOfKeyGroups,
-                keyGroupRange,
-                env);
+                stateBackend, keySerializer, numberOfKeyGroups, keyGroupRange, env);
     }
 
     @Override

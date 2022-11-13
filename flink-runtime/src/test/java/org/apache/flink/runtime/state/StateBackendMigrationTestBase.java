@@ -55,6 +55,7 @@ import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -99,7 +100,7 @@ public abstract class StateBackendMigrationTestBase<B extends StateBackend> exte
         return true;
     }
 
-    @TempDir public static java.nio.file.Path tmp;
+    @TempDir public static File tempFolder;
 
     @BeforeEach
     public void before() {

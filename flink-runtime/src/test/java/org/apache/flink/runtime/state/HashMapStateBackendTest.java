@@ -41,28 +41,28 @@ import java.util.List;
  */
 public class HashMapStateBackendTest extends StateBackendTestBase<HashMapStateBackend> {
 
-    @TempDir
-    public static java.nio.file.Path tmp;
+    @TempDir public static File tmpCheckpointPath;
 
     @Parameters(name = "statebackend={0}")
     public static List<Object[]> modes() {
         ArrayList<Object[]> params = new ArrayList<>();
 
-        params.add(new Object[] {
-                new HashMapStateBackend(),
-                (SupplierWithException<CheckpointStorage, IOException>)
-                        JobManagerCheckpointStorage::new
-        });
-        params.add(new Object[] {
-                new HashMapStateBackend(),
-                (SupplierWithException<CheckpointStorage, IOException>)
-                        () -> {
-                            String checkpointPath =
-                                    new File(tmp.toFile(), "checkpointPath").toURI().toString();
-                            return new FileSystemCheckpointStorage(
-                                    new Path(checkpointPath), 0, -1);
-                        }
-        });
+        params.add(
+                new Object[] {
+                    new HashMapStateBackend(),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            JobManagerCheckpointStorage::new
+                });
+        params.add(
+                new Object[] {
+                    new HashMapStateBackend(),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            () -> {
+                                String checkpointPath = tmpCheckpointPath.toURI().toString();
+                                return new FileSystemCheckpointStorage(
+                                        new Path(checkpointPath), 0, -1);
+                            }
+                });
         return params;
     }
 

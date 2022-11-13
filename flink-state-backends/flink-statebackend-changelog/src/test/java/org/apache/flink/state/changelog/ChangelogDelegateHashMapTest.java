@@ -48,33 +48,33 @@ import java.util.List;
 /** Tests for {@link ChangelogStateBackend} delegating {@link HashMapStateBackendTest}. */
 public class ChangelogDelegateHashMapTest extends HashMapStateBackendTest {
 
-    @TempDir
-    public static java.nio.file.Path tmp;
+    @TempDir public static File tmPath;
 
     @Parameters(name = "statebackend={0}")
     public static List<Object[]> modes() {
         ArrayList<Object[]> params = new ArrayList<>();
 
-        params.add(new Object[] {
-                new ChangelogStateBackend(new HashMapStateBackend()),
-                (SupplierWithException<CheckpointStorage, IOException>)
-                        JobManagerCheckpointStorage::new
-        });
-        params.add(new Object[] {
-                new ChangelogStateBackend(new HashMapStateBackend()),
-                (SupplierWithException<CheckpointStorage, IOException>)
-                        () -> {
-                            String checkpointPath =
-                                    new File(tmp.toFile(), "checkpointPath").toURI().toString();
-                            return new FileSystemCheckpointStorage(
-                                    new Path(checkpointPath), 0, -1);
-                        }
-        });
+        params.add(
+                new Object[] {
+                    new ChangelogStateBackend(new HashMapStateBackend()),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            JobManagerCheckpointStorage::new
+                });
+        params.add(
+                new Object[] {
+                    new ChangelogStateBackend(new HashMapStateBackend()),
+                    (SupplierWithException<CheckpointStorage, IOException>)
+                            () -> {
+                                String checkpointPath = tmpCheckpointPath.toURI().toString();
+                                return new FileSystemCheckpointStorage(
+                                        new Path(checkpointPath), 0, -1);
+                            }
+                });
         return params;
     }
 
     protected TestTaskStateManager getTestTaskStateManager() throws IOException {
-        return ChangelogStateBackendTestUtils.createTaskStateManager(new File(tmp.toFile(), "tmPath"));
+        return ChangelogStateBackendTestUtils.createTaskStateManager(tmPath);
     }
 
     @Override
@@ -96,11 +96,7 @@ public class ChangelogDelegateHashMapTest extends HashMapStateBackendTest {
             throws Exception {
 
         return ChangelogStateBackendTestUtils.createKeyedBackend(
-                stateBackend,
-                keySerializer,
-                numberOfKeyGroups,
-                keyGroupRange,
-                env);
+                stateBackend, keySerializer, numberOfKeyGroups, keyGroupRange, env);
     }
 
     @TestTemplate

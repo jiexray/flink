@@ -107,8 +107,8 @@ public class EmbeddedRocksDBStateBackendTest
     private ValueState<Integer> testState1;
     private ValueState<String> testState2;
 
-    @TempDir
-    public static java.nio.file.Path tmp;
+    @TempDir public static File tmpCheckpointPath;
+    @TempDir public static File tmpDbPath;
 
     @Parameters(name = "statebackend={0}, incrementalCheckpointing={1}")
     public static List<Object[]> modes() throws IOException {
@@ -125,12 +125,9 @@ public class EmbeddedRocksDBStateBackendTest
                         false,
                         (SupplierWithException<CheckpointStorage, IOException>)
                                 () -> {
-                                    File checkpointPath = new File(tmp.toFile(), "externalCheckpointPath");
-                                    if (!checkpointPath.exists()) {
-                                        checkpointPath.mkdirs();
-                                    }
+                                    String checkpointPath = tmpCheckpointPath.toURI().toString();
                                     return new FileSystemCheckpointStorage(
-                                            new Path(checkpointPath.toURI()), 0, -1);
+                                            new Path(checkpointPath), 0, -1);
                                 }
                     }
                 });
@@ -150,7 +147,7 @@ public class EmbeddedRocksDBStateBackendTest
     private final RocksDBResourceContainer optionsContainer = new RocksDBResourceContainer();
 
     public void prepareRocksDB() throws Exception {
-        File dbPath = new File(new File(tmp.toFile(), "dbPath"), DB_INSTANCE_DIR_STRING);
+        File dbPath = new File(tmpDbPath, DB_INSTANCE_DIR_STRING);
         if (!dbPath.exists()) {
             dbPath.mkdirs();
         }
@@ -167,11 +164,10 @@ public class EmbeddedRocksDBStateBackendTest
         defaultCFHandle = columnFamilyHandles.remove(0);
     }
 
-    /**
-     * State backend is initialized in the parameter injector. Do not initialize it elsewhere.
-     */
-    public static ConfigurableStateBackend getStateBackend(boolean enableIncrementalCheckpointing) throws IOException {
-        dbPath = new File(tmp.toFile(), "dbPath").getAbsolutePath();
+    /** State backend is initialized in the parameter injector. Do not initialize it elsewhere. */
+    public static ConfigurableStateBackend getStateBackend(boolean enableIncrementalCheckpointing)
+            throws IOException {
+        dbPath = tmpDbPath.getAbsolutePath();
         EmbeddedRocksDBStateBackend backend =
                 new EmbeddedRocksDBStateBackend(enableIncrementalCheckpointing);
         Configuration configuration = new Configuration();
@@ -234,7 +230,7 @@ public class EmbeddedRocksDBStateBackendTest
 
         RocksDBKeyedStateBackendBuilder keyedStateBackendBuilder =
                 RocksDBTestUtils.builderForTestDB(
-                                new File(tmp.toFile(), "dbPath"), // this is not used anyways because the DB is
+                                tmpDbPath, // this is not used anyways because the DB is
                                 // injected
                                 IntSerializer.INSTANCE,
                                 spy(db),
@@ -327,7 +323,7 @@ public class EmbeddedRocksDBStateBackendTest
         try {
             test =
                     RocksDBTestUtils.builderForTestDB(
-                                    new File(tmp.toFile(), "dbPath"),
+                                    tmpDbPath,
                                     IntSerializer.INSTANCE,
                                     db,
                                     defaultCFHandle,
@@ -461,7 +457,7 @@ public class EmbeddedRocksDBStateBackendTest
             KeyedStateHandle keyedStateHandle = snapshotResult.getJobManagerOwnedSnapshot();
             assertThat(keyedStateHandle).isNotNull();
             assertThat(keyedStateHandle.getStateSize() > 0).isTrue();
-            assertThat( keyedStateHandle.getKeyGroupRange().getNumberOfKeyGroups()).isEqualTo(2);
+            assertThat(keyedStateHandle.getKeyGroupRange().getNumberOfKeyGroups()).isEqualTo(2);
 
             for (BlockingCheckpointOutputStream stream : testStreamFactory.getAllCreatedStreams()) {
                 assertThat(stream.isClosed()).isTrue();

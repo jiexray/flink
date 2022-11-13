@@ -26,6 +26,8 @@ import org.apache.flink.testutils.junit.extensions.parameterized.Parameter;
 import org.apache.flink.testutils.junit.extensions.parameterized.Parameters;
 import org.apache.flink.util.function.SupplierWithException;
 
+import org.junit.jupiter.api.io.TempDir;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,10 +37,12 @@ import java.util.List;
 public class EmbeddedRocksDBStateBackendMigrationTest
         extends StateBackendMigrationTestBase<EmbeddedRocksDBStateBackend> {
 
+    @TempDir public static File tmpCheckpointPath;
+
     @Parameter(value = 1)
     public SupplierWithException<CheckpointStorage, IOException> storageSupplier;
 
-    @Parameters
+    @Parameters(name = "statebackend={0}")
     public static List<Object[]> modes() {
         ArrayList<Object[]> params = new ArrayList<>();
         params.add(
@@ -52,8 +56,7 @@ public class EmbeddedRocksDBStateBackendMigrationTest
                     new EmbeddedRocksDBStateBackend(false),
                     (SupplierWithException<CheckpointStorage, IOException>)
                             () -> {
-                                String checkpointPath =
-                                        new File(tmp.toFile(), "checkpointPath").toURI().toString();
+                                String checkpointPath = tmpCheckpointPath.toURI().toString();
                                 return new FileSystemCheckpointStorage(checkpointPath);
                             }
                 });
