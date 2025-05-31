@@ -18,6 +18,10 @@
 
 package org.apache.flink.fs.osshadoop;
 
+import com.aliyun.jindodata.oss.JindoOssFileSystem;
+
+import com.aliyun.jindodata.oss.auth.SimpleCredentialsProvider;
+
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
@@ -30,6 +34,8 @@ import org.apache.flink.util.Preconditions;
 import org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 import java.io.IOException;
 import java.net.URI;
@@ -107,7 +113,7 @@ public class OSSFileSystemFactory implements FileSystemFactory {
         Preconditions.checkArgument(localTmpDirectories.length > 0);
         final String localTmpDirectory = localTmpDirectories[0];
         return new FlinkOSSFileSystem(
-                fs,
+                getFullyManagedFileSystem(fsUri),
                 flinkConfig.get(PART_UPLOAD_MIN_SIZE),
                 flinkConfig.get(MAX_CONCURRENT_UPLOADS),
                 localTmpDirectory,
@@ -139,5 +145,56 @@ public class OSSFileSystemFactory implements FileSystemFactory {
             }
         }
         return conf;
+    }
+
+    public static @Nullable String getRegionFromConf(org.apache.hadoop.conf.Configuration conf) {
+        return conf.get("fs.oss.region-id");
+    }
+
+    void setSignatureConfForJindo(
+            org.apache.hadoop.conf.Configuration hadoopConfig,
+            org.apache.hadoop.conf.Configuration jindoConfig) {
+        @Nullable String regionID = getRegionFromConf(hadoopConfig);
+        if (regionID != null) {
+            jindoConfig.set("fs.oss.region", regionID);
+            jindoConfig.set("fs.oss.signer.version", "4");
+        }
+    }
+
+    private String reduceScheme(String uri) {
+        String[] split = uri.split("://");
+        return split.length == 1 ? split[0] : split[1];
+    }
+
+    private org.apache.hadoop.fs.FileSystem getFullyManagedFileSystem(URI fsUri) {
+        try {
+            org.apache.hadoop.conf.Configuration conf =
+                    new org.apache.hadoop.conf.Configuration(hadoopConfig);
+            conf.set("fs.oss.impl", JindoOssFileSystem.class.getName());
+            String endpoint =
+                    Preconditions.checkNotNull(
+                            conf.get("fs.oss.endpoint"),
+                            "fs.oss.endpoint must be set when using fully managed storage.");
+            conf.set("fs.oss.endpoint", reduceScheme(endpoint));
+            conf.set(
+                    "fs.oss.credentials.provider",
+                    SimpleCredentialsProvider.class.getCanonicalName());
+            setSignatureConfForJindo(hadoopConfig, conf);
+            LOG.info("Using simple credentials provider for fully managed storage.");
+            org.apache.hadoop.fs.Path hadoopPath =
+                    new org.apache.hadoop.fs.Path(fsUri.toString());
+            return getJindoOssFileSystem(conf, hadoopPath);
+        } catch (Exception ex) {
+            LOG.warn("Failed to create fully managed file system", ex);
+        }
+
+        return null;
+    }
+
+    private JindoOssFileSystem getJindoOssFileSystem(
+            org.apache.hadoop.conf.Configuration conf, org.apache.hadoop.fs.Path hadoopPath)
+            throws IOException {
+        org.apache.hadoop.fs.FileSystem fileSystem = hadoopPath.getFileSystem(conf);
+        return (JindoOssFileSystem) fileSystem;
     }
 }
