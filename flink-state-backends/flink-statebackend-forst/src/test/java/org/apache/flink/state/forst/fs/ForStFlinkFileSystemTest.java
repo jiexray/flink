@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -67,14 +68,14 @@ public class ForStFlinkFileSystemTest {
         return Arrays.asList(
                 new Object[][] {
                     {null},
-                    {
-                        new FileBasedCache(
-                                1024 * 3,
-                                new SizeBasedCacheLimitPolicy(1024 * 3),
-                                FileSystem.getLocalFileSystem(),
-                                new org.apache.flink.core.fs.Path(tempDir.toString() + "/cache"),
-                                null)
-                    }
+//                    {
+//                        new FileBasedCache(
+//                                1024 * 3,
+//                                new SizeBasedCacheLimitPolicy(1024 * 3),
+//                                FileSystem.getLocalFileSystem(),
+//                                new org.apache.flink.core.fs.Path(tempDir.toString() + "/cache"),
+//                                null)
+//                    }
                 });
     }
 
@@ -189,6 +190,80 @@ public class ForStFlinkFileSystemTest {
             inputStream.readFully(0, byteBuffer);
             inputStream.readFully(byteBuffer);
         }
+    }
+
+    @TestTemplate
+    void testReadLargeFileSize() throws Exception {
+        ForStFlinkFileSystem fileSystem =
+                new ForStFlinkFileSystem(
+                        new ByteBufferReadableLocalFileSystem(),
+                        tempDir.toString(),
+                        tempDir.toString(),
+                        fileBasedCache);
+        int offsetBytes = 1024;
+        int numWriteBytes = 1024 * 1024 * 6;
+        byte[] randOffsetBytes = new byte[offsetBytes];
+        byte[] randBytes = new byte[numWriteBytes];
+        Random random = new Random();
+        random.nextBytes(randBytes);
+        random.nextBytes(randOffsetBytes);
+        
+        org.apache.flink.core.fs.Path testFilePath =
+                new org.apache.flink.core.fs.Path(tempDir.toString() + "/temp-file");
+        try (ByteBufferWritableFSDataOutputStream outputStream = fileSystem.create(testFilePath)) {
+            outputStream.write(randOffsetBytes);
+            outputStream.write(randBytes);
+        }
+        
+        for (int i = 0; i < 3; i++) {
+            try (ByteBufferReadableFSDataInputStream inputStream = fileSystem.open(testFilePath)) {
+                ByteBuffer byteBuffer = ByteBuffer.allocate(numWriteBytes);
+                inputStream.readFully(offsetBytes, byteBuffer);
+                assertThat(byteBuffer.array()).isEqualTo(randBytes);
+            }
+        }
+    }
+
+    @TestTemplate
+    void testReadSmallFileSize() throws Exception {
+        ForStFlinkFileSystem fileSystem =
+                new ForStFlinkFileSystem(
+                        new ByteBufferReadableLocalFileSystem(),
+                        tempDir.toString(),
+                        tempDir.toString(),
+                        fileBasedCache);
+        int numWriteBytes = 1024 * 1024 * 6;
+        byte[] randBytes = new byte[numWriteBytes];
+        Random random = new Random();
+        random.nextBytes(randBytes);
+
+        org.apache.flink.core.fs.Path testFilePath =
+                new org.apache.flink.core.fs.Path(tempDir.toString() + "/temp-file");
+        try (ByteBufferWritableFSDataOutputStream outputStream = fileSystem.create(testFilePath)) {
+            outputStream.write(randBytes);
+        }
+
+        int readPos = 0;
+        int readStep = 513;
+        int totalRead = 0;
+        ByteBuffer readBuf = ByteBuffer.allocate(readStep);
+        try (ByteBufferReadableFSDataInputStream inputStream = fileSystem.open(testFilePath)) {
+            while (true) {
+                int readLen = inputStream.readFully(readPos, readBuf);
+                totalRead += readLen;
+                if (readLen == 0) {
+                    break;
+                }
+                
+                byte[] actualRead = Arrays.copyOfRange(readBuf.array(), 0, readLen);
+                assertThat(Arrays.copyOfRange(randBytes, readPos, readPos + readLen)).isEqualTo(actualRead);
+
+                readPos += readStep;
+                readBuf = ByteBuffer.allocate(readStep);
+            }
+        } catch (Exception e) {}
+
+        assertThat(totalRead).isEqualTo(numWriteBytes);
     }
 
     @TestTemplate

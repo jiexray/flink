@@ -269,13 +269,14 @@ public final class ForStResourceContainer implements AutoCloseable {
             if (rocksResources.isUsingPartitionedIndexFilters()
                     && overwriteFilterIfExist(blockBasedTableConfig)) {
                 blockBasedTableConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
-                blockBasedTableConfig.setPartitionFilters(true);
-                blockBasedTableConfig.setPinTopLevelIndexAndFilter(true);
+                blockBasedTableConfig.setPartitionFilters(false);
+                blockBasedTableConfig.setPinTopLevelIndexAndFilter(false);
             }
+            LOG.info("Disable all pin filtering");
             blockBasedTableConfig.setBlockCache(blockCache);
-            blockBasedTableConfig.setCacheIndexAndFilterBlocks(true);
-            blockBasedTableConfig.setCacheIndexAndFilterBlocksWithHighPriority(true);
-            blockBasedTableConfig.setPinL0FilterAndIndexBlocksInCache(true);
+            blockBasedTableConfig.setCacheIndexAndFilterBlocks(false);
+            blockBasedTableConfig.setCacheIndexAndFilterBlocksWithHighPriority(false);
+            blockBasedTableConfig.setPinL0FilterAndIndexBlocksInCache(false);
             opt.setTableFormatConfig(blockBasedTableConfig);
         }
 
@@ -591,6 +592,12 @@ public final class ForStResourceContainer implements AutoCloseable {
             handlesToClose.add(bloomFilter);
             blockBasedTableConfig.setFilterPolicy(bloomFilter);
         }
+
+        LOG.info("Disable pinning filters");
+        blockBasedTableConfig.setCacheIndexAndFilterBlocks(false);
+        blockBasedTableConfig.setCacheIndexAndFilterBlocksWithHighPriority(false);
+        blockBasedTableConfig.setPinL0FilterAndIndexBlocksInCache(false);
+        blockBasedTableConfig.setPinTopLevelIndexAndFilter(false);
 
         return currentOptions.setTableFormatConfig(blockBasedTableConfig);
     }

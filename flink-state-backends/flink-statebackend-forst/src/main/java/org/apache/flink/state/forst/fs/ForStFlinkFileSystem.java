@@ -211,7 +211,7 @@ public class ForStFlinkFileSystem extends FileSystem {
                     return cachedDataInputStream == null ? inputStream : cachedDataInputStream;
                 },
                 DEFAULT_INPUT_STREAM_CAPACITY,
-                source.getSize());
+                source.getSize(), dbFilePath);
     }
 
     @Override
@@ -229,7 +229,7 @@ public class ForStFlinkFileSystem extends FileSystem {
                     return cachedDataInputStream == null ? inputStream : cachedDataInputStream;
                 },
                 DEFAULT_INPUT_STREAM_CAPACITY,
-                source.getSize());
+                source.getSize(), dbFilePath);
     }
 
     @Override
